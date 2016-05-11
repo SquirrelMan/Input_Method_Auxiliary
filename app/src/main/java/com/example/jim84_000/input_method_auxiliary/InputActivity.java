@@ -7,17 +7,56 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.bluetooth.BluetoothAdapter;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.StrictMode;
+import android.speech.tts.TextToSpeech;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.widget.ScrollView;
 
+import com.chenlb.mmseg4j.ComplexSeg;
 import com.chenlb.mmseg4j.Dictionary;
+import com.chenlb.mmseg4j.MMSeg;
+import com.chenlb.mmseg4j.Seg;
+import com.chenlb.mmseg4j.Word;
+import com.neurosky.thinkgear.TGDevice;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.util.Locale;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
 import static android.os.StrictMode.ThreadPolicy;
+import static android.os.StrictMode.setThreadPolicy;
+
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.WorkbookSettings;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+
 import static android.os.StrictMode.setThreadPolicy;
 
 public class InputActivity extends Activity{
