@@ -250,7 +250,7 @@ public class InputActivity extends Activity{
     //斷字系統
     private clear_storeword_spilt(){
         for(int i = 0 ; i < 256 ; i++){
-            storewordspilt[pointer_storewordspilt]="";
+            storewordspilt[i]="";
         }
         pointer_storewordspilt=0;
     }
