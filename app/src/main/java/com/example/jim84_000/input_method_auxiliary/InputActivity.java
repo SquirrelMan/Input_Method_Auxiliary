@@ -72,6 +72,8 @@ public class InputActivity extends Activity{
     public static boolean con=false;
     int level=0,offset=0; //level=0,1,2 offset=0,9
     protected Dictionary dic;
+    private String [] storewordspilt=new String[256];
+    private int pointer_storewordspilt=0;
 
     private void LoadData(){
         String[][] tmp=new String[3][18];
@@ -243,7 +245,16 @@ public class InputActivity extends Activity{
             terminate();
     }
     
+    
+    
     //斷字系統
+    private clear_storeword_spilt(){
+        for(int i = 0 ; i < 256 ; i++){
+            storewordspilt[pointer_storewordspilt]="";
+        }
+        pointer_storewordspilt=0;
+    }
+    
     protected Seg getSeg() {
         return new ComplexSeg(dic);
     }
@@ -257,9 +268,9 @@ public class InputActivity extends Activity{
         boolean first = true;
         while((word=mmSeg.next())!=null) {
             if(!first) {
-                spilt_local[spilt_count]=sb.length();
                 sb.append(wordSpilt);
-                spilt_count++;
+                storewordspilt[pointer_storewordspilt]=wordSpilt;
+                pointer_storewordspilt++;
             }
             String w = word.getString();
             sb.append(w);
