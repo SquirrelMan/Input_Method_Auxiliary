@@ -56,6 +56,8 @@ public class InputActivity extends Activity{
             ThreadPolicy policy = new ThreadPolicy.Builder().permitAll().build();
             setThreadPolicy(policy);
         }
+        System.setProperty("mmseg.dic.path", "./src/HelloChinese/data");
+        dic = Dictionary.getInstance();
 
         btn_send=(Button)findViewById(R.id.btn_send);
         btn_next=(Button)findViewById(R.id.btn_next);
@@ -200,5 +202,42 @@ public class InputActivity extends Activity{
         super.onPause();
         if(con)
             terminate();
+    }
+    
+    //斷字系統
+    protected Seg getSeg() {
+        return new ComplexSeg(dic);
+    }
+
+    public String segWords(String txt, String wordSpilt) throws IOException {
+        Reader input = new StringReader(txt);
+        StringBuilder sb = new StringBuilder();
+        Seg seg = getSeg();
+        MMSeg mmSeg = new MMSeg(input, seg);
+        Word word = null;
+        boolean first = true;
+        while((word=mmSeg.next())!=null) {
+            if(!first) {
+                spilt_local[spilt_count]=sb.length();
+                sb.append(wordSpilt);
+                spilt_count++;
+            }
+            String w = word.getString();
+            sb.append(w);
+            first = false;
+
+        }
+        return sb.toString();
+    }
+
+    public String run(String args) throws IOException {
+        String txt = "";
+
+        if(args.length() > 0) {
+            txt = args;
+            return segWords(txt, "|");
+        }
+        else
+            return "";
     }
 }
