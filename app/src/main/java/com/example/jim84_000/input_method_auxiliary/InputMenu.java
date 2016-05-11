@@ -1,3 +1,4 @@
+
 package com.example.jim84_000.input_method_auxiliary;
 
 import android.app.Activity;
@@ -85,7 +86,7 @@ public class InputMenu extends Activity implements TextToSpeech.OnInitListener{
     private Button button_home;
     private EditText inputedittext;
     private String Message="";
-    private InputData[][] IDB=new InputData[10][];
+    private InputData_back[][] IDB=new InputData_back[10][];
     private int currentlevel;
     private int currentrid;
     private int lastlevel;
@@ -146,9 +147,9 @@ public class InputMenu extends Activity implements TextToSpeech.OnInitListener{
         eye_click=0;
         //writeIDBcode();
         for(int i = 0 ; i < 10 ; i++){
-            IDB[i]=new InputData[100];
+            IDB[i]=new InputData_back[100];
             for(int j = 0 ; j < 100 ; j ++){
-                IDB[i][j]=new InputData();
+                IDB[i][j]=new InputData_back();
             }
         }
         currentlevel=1;
@@ -1594,13 +1595,6 @@ public class InputMenu extends Activity implements TextToSpeech.OnInitListener{
         }
         else
             return "";
-    }
-
-    public void firstlevel(){
-        //readdb
-        //make queue to record ID in count order for 252
-
-
     }
 }
 

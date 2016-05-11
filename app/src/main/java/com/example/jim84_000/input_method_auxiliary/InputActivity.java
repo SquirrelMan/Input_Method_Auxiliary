@@ -8,6 +8,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.chenlb.mmseg4j.Dictionary;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -23,36 +25,125 @@ public class InputActivity extends Activity{
     public static int PORT = 8988;
     private DataOutputStream out;
     private Socket socket;
-    Button btn;
+    Button btn_send,btn_next,btn_lv1,btn_load,btn_clear,btn_mwm;
+    Button[] btn=new Button[9];
     EditText editText;
-    TextView test;
+    TextView tv_status;
+    InputData[][] Data=new InputData[3][18];
+    public static boolean con=false;
+    int level=0,offset=0; //level=0,1,2 offset=0,9
+    protected Dictionary dic;
+
+    private void LoadData(){
+        String[][] tmp=new String[3][18];
+        for(int i=0;i<54;i++)
+            tmp[i/18][i%18]="";
+        tmp[0]= new String[]{"我","你","爸爸","媽媽","姊姊","老師","助教","同學","不","電腦","手機","平板","USB","硬碟","作業","程式","這邊","問題"};
+        tmp[1]= new String[]{"想","要","是","的","們","好","好像","不舒服","請","有","沒","了解","謝謝!","","","","",""};
+        tmp[2]= new String[]{"上廁所","吃飯","喝水","用","拿","睡覺","幫忙","嗎","說","問","寫","了","麻煩","一個","","","",""};
+        for(int i=0;i<54;i++)
+            Data[i/18][i%18]=new InputData(tmp[i/18][i%18]);
+    }
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_client);
         if (android.os.Build.VERSION.SDK_INT > 9) {
             ThreadPolicy policy = new ThreadPolicy.Builder().permitAll().build();
             setThreadPolicy(policy);
         }
-        btn=(Button)findViewById(R.id.button);
+
+        btn_send=(Button)findViewById(R.id.btn_send);
+        btn_next=(Button)findViewById(R.id.btn_next);
+        btn_lv1=(Button)findViewById(R.id.btn_lv1);
+        btn_clear=(Button)findViewById(R.id.btn_clear);
+        btn_load=(Button)findViewById(R.id.btn_load);
+        btn_mwm=(Button)findViewById(R.id.btn_mwm);
+
+        int[] btnid={R.id.btn1,R.id.btn2,R.id.btn3,R.id.btn4,R.id.btn5,R.id.btn6,R.id.btn7,R.id.btn8,R.id.btn9};
+        for(int i=0;i<9;i++)
+            btn[i]=(Button)findViewById(btnid[i]);
+
         editText=(EditText)findViewById(R.id.editText);
-        test=(TextView)findViewById(R.id.textView2);
-        test.setText("");
-        btn.setText("SEND");
+        tv_status=(TextView)findViewById(R.id.sender_status);
+        tv_status.setText("");
         String str="test測試123";
-        editText.setText(str);
-        btn.setOnClickListener(new View.OnClickListener() {
+        // editText.setText(str);
+        //editText.setSelection(str.length());
+        btn_clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                editText.setText("");
+            }
+        });
+        btn_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 send();
             }
         });
+
+        try{
+            LoadData();
+        }catch (Exception e){
+            System.out.println(e.toString());
+        }
+        System.out.println(Data.length*Data[2].length);
+
+        setBtnText();
+
+        for(int i=0;i<9;i++){
+            final int arg = i;
+            btn[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String s=editText.getText().toString() + btn[arg].getText().toString();
+                    editText.setText(s);
+                    editText.setSelection(s.length());
+                    level=(level+1)%3;
+                    offset=0;
+                    setBtnText();
+                }
+            });
+
+        }
+
+        btn_next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                next_page();
+            }
+        });
+        btn_lv1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                level = 0;
+                offset = 0;
+                setBtnText();
+            }
+        });
     }
 
+    private void next_page(){
+        level=(level+offset/9)%3;
+        offset=((offset+9)%2)*9;
+        setBtnText();
+    }
+
+    private void setBtnText()
+    {
+        for(int i=0;i<9;i++){
+            btn[i].setText(Data[level][i+offset].text);
+        }
+    }
 
     private void send(){
 
-        test.setText("");
+        tv_status.setText("");
         //要傳送的字串
         String message = editText.getText().toString();
         try {
@@ -64,9 +155,7 @@ public class InputActivity extends Activity{
         }
     }
 
-    @Override
-    protected void onStart(){
-        super.onStart();
+    private void ConnectToDisplay(){
         try {
             InetAddress serverAddr = null;
             SocketAddress sc_add = null;            //設定Server IP位置
@@ -84,25 +173,32 @@ public class InputActivity extends Activity{
         }
     }
 
-    @Override
-    protected void onDestroy(){
-        super.onDestroy();
+    private void terminate(){
         try {
             out.close();
             socket.close();
         }catch (Exception e){
-            test.setText(e.toString());
+            tv_status.setText(e.toString());
         }
+    }
+    @Override
+    protected void onStart(){
+        super.onStart();
+        if(con)
+            ConnectToDisplay();
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        if(con)
+            terminate();
     }
 
     @Override
     protected void onPause(){
         super.onPause();
-        try {
-            out.close();
-            socket.close();
-        }catch (Exception e){
-            test.setText(e.toString());
-        }
+        if(con)
+            terminate();
     }
 }
