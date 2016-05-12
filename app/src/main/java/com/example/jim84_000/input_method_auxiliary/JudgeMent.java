@@ -1,4 +1,4 @@
-package com.example.android.wifidirect;
+package com.example.jim84_000.input_method_auxiliary;
 
 
 import android.content.ContentValues;
