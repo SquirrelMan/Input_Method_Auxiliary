@@ -76,10 +76,10 @@ public class DBActivity extends Activity{
         }
         c.close();
 
-        //���USER_NAME�bSpinner���-spinner�W
+        //
         Spinner spinner = (Spinner)findViewById(R.id.Spinner01);
         spinner.setAdapter(new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_item, list));
-        //�bSpinner���-spinner�W��w�d�߸�ơA��ܩҦ���Ʀb�e���W
+        //
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String content = ((Spinner) parent).getSelectedItem().toString();
@@ -99,7 +99,7 @@ public class DBActivity extends Activity{
             }
         });
 
-        //���U[Add]���s�ɡA�s�W�@�����
+        //
         listener_add = new View.OnClickListener() {
             public void onClick(View v) {
                 ContentValues values = new ContentValues();
@@ -112,7 +112,7 @@ public class DBActivity extends Activity{
                 onCreate(savedInstanceState);
             }
         };
-        //���U[Update]���s�ɡA��s�@�����
+        //
         listener_update = new View.OnClickListener() {
             public void onClick(View v) {
                 ContentValues values = new ContentValues();
@@ -126,7 +126,7 @@ public class DBActivity extends Activity{
                 onCreate(savedInstanceState);
             }
         };
-        //���U[Delete]���s�ɡA�R���@�����
+        //
         listener_delete = new View.OnClickListener() {
             public void onClick(View v) {
                 String where = VocSchema.ID + " = " + id_this;
@@ -136,7 +136,7 @@ public class DBActivity extends Activity{
                 onCreate(savedInstanceState);
             }
         };
-        //���U[Clear]���s�ɡA�M�ſ�J���
+        //
         listener_clear = new View.OnClickListener() {
             public void onClick(View v) {
                 mEditText01.setText("");
@@ -144,7 +144,7 @@ public class DBActivity extends Activity{
                 mEditText03.setText("");
             }
         };
-        //�]�wBUTTON0i,i=1,2,3,4��OnClickListener
+        //OnClickListener
         button_add = (Button)findViewById(R.id.Button01);
         button_add.setOnClickListener(listener_add);
         button_update = (Button)findViewById(R.id.Button02);
