@@ -1,260 +1,174 @@
 package com.example.jim84_000.input_method_auxiliary;
 
+
 import android.app.Activity;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.Spinner;
 
-import com.chenlb.mmseg4j.ComplexSeg;
-import com.chenlb.mmseg4j.Dictionary;
-import com.chenlb.mmseg4j.MMSeg;
-import com.chenlb.mmseg4j.Seg;
-import com.chenlb.mmseg4j.Word;
+public class DBActivity extends Activity{
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-
-import static android.os.StrictMode.ThreadPolicy;
-import static android.os.StrictMode.setThreadPolicy;
-
-public class InputActivity extends Activity{
-    public static final String IP_SERVER = "192.168.49.1";
-    public static int PORT = 8988;
-    private DataOutputStream out;
-    private Socket socket;
-    Button btn_send,btn_next,btn_lv1,btn_load,btn_clear,btn_mwm;
-    Button[] btn=new Button[9];
-    EditText editText;
-    TextView tv_status;
-    InputData[][] Data=new InputData[3][18];
-    public static boolean con=false;
-    int level=0,offset=0; //level=0,1,2 offset=0,9
-    protected Dictionary dic;
-    private String [] storewordspilt=new String[256];
-    private int pointer_storewordspilt=0;
-
-    private void LoadData(){
-        String[][] tmp=new String[3][18];
-        for(int i=0;i<54;i++)
-            tmp[i/18][i%18]="";
-        tmp[0]= new String[]{"我","你","爸爸","媽媽","姊姊","老師","助教","同學","不","電腦","手機","平板","USB","硬碟","作業","程式","這邊","問題"};
-        tmp[1]= new String[]{"想","要","是","的","們","好","好像","不舒服","請","有","沒","了解","謝謝!","","","","",""};
-        tmp[2]= new String[]{"上廁所","吃飯","喝水","用","拿","睡覺","幫忙","嗎","說","問","寫","了","麻煩","一個","","","",""};
-        for(int i=0;i<54;i++)
-            Data[i/18][i%18]=new InputData(tmp[i/18][i%18]);
+    public static final int _DBVersion = 1; //<-- 版本
+    public static final String _DBName="Database.db";
+    View.OnClickListener listener_add = null;
+    View.OnClickListener listener_update = null;
+    View.OnClickListener listener_delete = null;
+    View.OnClickListener listener_clear = null;
+    Button button_add;
+    Button button_update;
+    Button button_delete;
+    Button button_clear;
+    DBConnection helper;
+    public int id_this;
+    public interface VocSchema {
+        String TABLE_NAME = "Voc";          //Table Name
+        String ID = "_id";                    //ID
+        String CONTENT = "content";       //CONTENT
+        String COUNT = "count";           //COUNT
+    }
+    public interface RelationSchema {
+        String TABLE_NAME = "Relation";          //Table Name
+        String ID = "_id";                    //ID
+        String ID1 = "id1";       //ID1
+        String ID2 = "id2";           //ID2
+        String COUNT = "count";       //COUNT
     }
 
-
-
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(final Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        //requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.activity_client);
-        if (android.os.Build.VERSION.SDK_INT > 9) {
-            ThreadPolicy policy = new ThreadPolicy.Builder().permitAll().build();
-            setThreadPolicy(policy);
+        setContentView(R.layout.db_manager);
+        final EditText mEditText01 = (EditText)findViewById(R.id.EditText01);
+        final EditText mEditText02 = (EditText)findViewById(R.id.EditText02);
+        final EditText mEditText03 = (EditText)findViewById(R.id.EditText03);
+        //�إ߸�ƮwPhoneBookDB�M���Table:Users
+        helper = new DBConnection(this);
+        final SQLiteDatabase db = helper.getWritableDatabase();
+        final String[] FROM_VOC =
+                {
+                        VocSchema.ID,
+                        VocSchema.CONTENT,
+                        VocSchema.COUNT
+                };
+        final String[] FROM_RELATION =
+                {
+                        RelationSchema.ID,
+                        RelationSchema.ID1,
+                        RelationSchema.ID2,
+                        RelationSchema.COUNT
+                };
+
+        Cursor c = db.query(VocSchema.TABLE_NAME, new String[] {VocSchema.CONTENT}, null, null, null, null, null);
+        c.moveToFirst();
+        CharSequence[] list = new CharSequence[c.getCount()];
+        for (int i = 0; i < list.length; i++) {
+            list[i] = c.getString(0);
+            c.moveToNext();
         }
-        System.setProperty("mmseg.dic.path", "./src/HelloChinese/data");
-        dic = Dictionary.getInstance();
+        c.close();
 
-        btn_send=(Button)findViewById(R.id.btn_send);
-        btn_next=(Button)findViewById(R.id.btn_next);
-        btn_lv1=(Button)findViewById(R.id.btn_lv1);
-        btn_clear=(Button)findViewById(R.id.btn_clear);
-        btn_load=(Button)findViewById(R.id.btn_load);
-        btn_mwm=(Button)findViewById(R.id.btn_mwm);
+        //���USER_NAME�bSpinner���-spinner�W
+        Spinner spinner = (Spinner)findViewById(R.id.Spinner01);
+        spinner.setAdapter(new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_item, list));
+        //�bSpinner���-spinner�W��w�d�߸�ơA��ܩҦ���Ʀb�e���W
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String content = ((Spinner) parent).getSelectedItem().toString();
+                Cursor c = db.query("Voc", FROM_VOC, "content='" + content + "'", null, null, null, null);
+                c.moveToFirst();
+                id_this = Integer.parseInt(c.getString(0));
+                String id_thist=c.getString(0);
+                String content_this = c.getString(1);
+                String count_this = c.getString(2);
+                c.close();
+                mEditText01.setText(id_thist);
+                mEditText02.setText(content_this);
+                mEditText03.setText(count_this);
+            }
 
-        int[] btnid={R.id.btn1,R.id.btn2,R.id.btn3,R.id.btn4,R.id.btn5,R.id.btn6,R.id.btn7,R.id.btn8,R.id.btn9};
-        for(int i=0;i<9;i++)
-            btn[i]=(Button)findViewById(btnid[i]);
-
-        editText=(EditText)findViewById(R.id.editText);
-        tv_status=(TextView)findViewById(R.id.sender_status);
-        tv_status.setText("");
-        String str="test測試123";
-        // editText.setText(str);
-        //editText.setSelection(str.length());
-        btn_clear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                editText.setText("");
+            public void onNothingSelected(AdapterView<?> parent) {
             }
         });
-        btn_send.setOnClickListener(new View.OnClickListener() {
-            @Override
+
+        //���U[Add]���s�ɡA�s�W�@�����
+        listener_add = new View.OnClickListener() {
             public void onClick(View v) {
-                send();
+                ContentValues values = new ContentValues();
+                values.put(VocSchema.ID, mEditText01.getText().toString());
+                values.put(VocSchema.CONTENT, mEditText02.getText().toString());
+                values.put(VocSchema.COUNT, mEditText03.getText().toString());
+                SQLiteDatabase db = helper.getWritableDatabase();
+                db.insert(VocSchema.TABLE_NAME, null, values);
+                db.close();
+                onCreate(savedInstanceState);
             }
-        });
-
-        try{
-            LoadData();
-        }catch (Exception e){
-            System.out.println(e.toString());
-        }
-        System.out.println(Data.length*Data[2].length);
-
-        setBtnText();
-
-        for(int i=0;i<9;i++){
-            final int arg = i;
-            btn[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String s=editText.getText().toString() + btn[arg].getText().toString();
-                    editText.setText(s);
-                    editText.setSelection(s.length());
-                    level=(level+1)%3;
-                    offset=0;
-                    setBtnText();
-                }
-            });
-
-        }
-
-        btn_next.setOnClickListener(new View.OnClickListener() {
-            @Override
+        };
+        //���U[Update]���s�ɡA��s�@�����
+        listener_update = new View.OnClickListener() {
             public void onClick(View v) {
-                next_page();
+                ContentValues values = new ContentValues();
+                values.put(VocSchema.ID, mEditText01.getText().toString());
+                values.put(VocSchema.CONTENT, mEditText02.getText().toString());
+                values.put(VocSchema.COUNT, mEditText03.getText().toString());
+                String where = VocSchema.ID + " = " + id_this;
+                SQLiteDatabase db = helper.getWritableDatabase();
+                db.update(VocSchema.TABLE_NAME, values, where ,null);
+                db.close();
+                onCreate(savedInstanceState);
             }
-        });
-        btn_lv1.setOnClickListener(new View.OnClickListener() {
-            @Override
+        };
+        //���U[Delete]���s�ɡA�R���@�����
+        listener_delete = new View.OnClickListener() {
             public void onClick(View v) {
-                level = 0;
-                offset = 0;
-                setBtnText();
+                String where = VocSchema.ID + " = " + id_this;
+                SQLiteDatabase db = helper.getWritableDatabase();
+                db.delete(VocSchema.TABLE_NAME, where ,null);
+                db.close();
+                onCreate(savedInstanceState);
             }
-        });
-    }
-
-    private void next_page(){
-        level=(level+offset/9)%3;
-        offset=((offset+9)%2)*9;
-        setBtnText();
-    }
-
-    private void setBtnText()
-    {
-        for(int i=0;i<9;i++){
-            btn[i].setText(Data[level][i+offset].text);
-        }
-    }
-
-    private void send(){
-
-        tv_status.setText("");
-        //要傳送的字串
-        String message = editText.getText().toString();
-        try {
-            //傳送資料
-            out.writeUTF(message);
-            Toast.makeText(this,"成功傳送!",Toast.LENGTH_SHORT).show();
-        } catch (IOException e){
-            Toast.makeText(getApplicationContext(), "傳送失敗", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void ConnectToDisplay(){
-        try {
-            InetAddress serverAddr = null;
-            SocketAddress sc_add = null;            //設定Server IP位置
-            serverAddr = InetAddress.getByName(IP_SERVER);
-            //設定port:1234
-            sc_add= new InetSocketAddress(serverAddr,PORT);
-
-            socket = new Socket();
-            //與Server連線，timeout時間2秒
-            socket.connect(sc_add, 2000);
-            out = new DataOutputStream(socket.getOutputStream());
-        } catch (IOException e){
-            Toast.makeText(getApplicationContext(), "傳送失敗", Toast.LENGTH_SHORT).show();
-            this.finish();
-        }
-    }
-
-    private void terminate(){
-        try {
-            out.close();
-            socket.close();
-        }catch (Exception e){
-            tv_status.setText(e.toString());
-        }
-    }
-    @Override
-    protected void onStart(){
-        super.onStart();
-        if(con)
-            ConnectToDisplay();
-    }
-
-    @Override
-    protected void onDestroy(){
-        super.onDestroy();
-        if(con)
-            terminate();
-    }
-
-    @Override
-    protected void onPause(){
-        super.onPause();
-        if(con)
-            terminate();
-    }
-    
-    
-    
-    //斷字系統
-    private void clear_storeword_spilt(){
-        for(int i = 0 ; i < 256 ; i++){
-            storewordspilt[i]="";
-        }
-        pointer_storewordspilt=0;
-    }
-    
-    protected Seg getSeg() {
-        return new ComplexSeg(dic);
-    }
-
-    public String segWords(String txt, String wordSpilt) throws IOException {
-        Reader input = new StringReader(txt);
-        StringBuilder sb = new StringBuilder();
-        Seg seg = getSeg();
-        MMSeg mmSeg = new MMSeg(input, seg);
-        Word word = null;
-        boolean first = true;
-        while((word=mmSeg.next())!=null) {
-            if(!first) {
-                sb.append(wordSpilt);
-                storewordspilt[pointer_storewordspilt]=wordSpilt;
-                pointer_storewordspilt++;
+        };
+        //���U[Clear]���s�ɡA�M�ſ�J���
+        listener_clear = new View.OnClickListener() {
+            public void onClick(View v) {
+                mEditText01.setText("");
+                mEditText02.setText("");
+                mEditText03.setText("");
             }
-            String w = word.getString();
-            sb.append(w);
-            first = false;
-
-        }
-        return sb.toString();
+        };
+        //�]�wBUTTON0i,i=1,2,3,4��OnClickListener
+        button_add = (Button)findViewById(R.id.Button01);
+        button_add.setOnClickListener(listener_add);
+        button_update = (Button)findViewById(R.id.Button02);
+        button_update.setOnClickListener(listener_update);
+        button_delete = (Button)findViewById(R.id.Button03);
+        button_delete.setOnClickListener(listener_delete);
+        button_clear = (Button)findViewById(R.id.Button04);
+        button_clear.setOnClickListener(listener_clear);
     }
 
-    public String run(String args) throws IOException {
-        String txt = "";
-
-        if(args.length() > 0) {
-            txt = args;
-            return segWords(txt, "|");
+    public static class DBConnection extends SQLiteOpenHelper {
+        private DBConnection(Context ctx) {
+            super(ctx, _DBName,null, _DBVersion);
         }
-        else
-            return "";
+        public void onCreate(SQLiteDatabase db) {
+            String sql = "CREATE TABLE " + VocSchema.TABLE_NAME + " ("
+                    + VocSchema.ID  + " INTEGER primary key autoincrement, "
+                    + VocSchema.CONTENT + " text not null, "
+                    + VocSchema.COUNT + " INTEGER not null" + ");";
+            //Log.i("haiyang:createDB=", sql);
+            db.execSQL(sql);
+        }
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            // TODO Auto-generated method stub
+        }
     }
 }
