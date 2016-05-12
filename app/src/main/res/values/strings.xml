@@ -15,4 +15,13 @@
     <string name="group_owner_text">"Am I the Group Owner? "</string>
     <string name="label_me">ME</string>
     <string name="label_peers">PEERS</string>
+    <string name="app_add">Add</string>
+    <string name="app_update">Update</string>
+    <string name="app_delete">Delete</string>
+    <string name="app_clear">Clear</string>
+    <string name="app_username">User name:</string>
+    <string name="app_telephone">Telephone:</string>
+    <string name="app_address">Address:</string>
+    <string name="app_mail">Mail Address:</string>
 </resources>
+
