@@ -50,7 +50,7 @@ public class DBActivity extends Activity{
         final EditText mEditText01 = (EditText)findViewById(R.id.EditText01);
         final EditText mEditText02 = (EditText)findViewById(R.id.EditText02);
         final EditText mEditText03 = (EditText)findViewById(R.id.EditText03);
-        //�إ߸�ƮwPhoneBookDB�M���Table:Users
+        //
         helper = new DBConnection(this);
         final SQLiteDatabase db = helper.getWritableDatabase();
         final String[] FROM_VOC =
@@ -165,6 +165,13 @@ public class DBActivity extends Activity{
                     + VocSchema.CONTENT + " text not null, "
                     + VocSchema.COUNT + " INTEGER not null" + ");";
             //Log.i("haiyang:createDB=", sql);
+            db.execSQL(sql);
+
+            sql = "CREATE TABLE " + RelationSchema.TABLE_NAME + " ("
+                    + RelationSchema.ID  + " INTEGER primary key autoincrement, "
+                    + RelationSchema.ID1 + " INTEGER not null, "
+                    + RelationSchema.ID2 + " INTEGER not null" + ");";
+
             db.execSQL(sql);
         }
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
