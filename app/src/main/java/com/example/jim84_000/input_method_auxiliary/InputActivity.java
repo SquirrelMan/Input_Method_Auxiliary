@@ -44,7 +44,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     Button[] btn=new Button[9];
     EditText editText;
     TextView tv_status;
-    InputData[][] Data=new InputData[3][18];
+    InputData[][] Data=new InputData[3][];
     public static boolean con=false;
     int level=0,offset=0; //level=0,1,2 offset=0,9
     protected Dictionary dic;
@@ -54,6 +54,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     InputData[] datas;
     int[] map;
     SQLiteDatabase db;
+    int DBSIZE;
 
     public static final int _DBVersion = 1; //<-- 版本
     public static final String _DBName="Database.db";
@@ -93,12 +94,12 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     private static final String TAG = InputActivity.class.getName();
 
     private void LoadData(){
-        String path="/sdcard/DB/Database.db";
-        db=SQLiteDatabase.openDatabase(path,null,SQLiteDatabase.OPEN_READWRITE);
-        Cursor c=db.rawQuery("SELECT * FROM "+DBActivity.VocSchema.TABLE_NAME+" ORDER BY "+DBActivity.VocSchema.COUNT+" DESC;",null);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor c=db.rawQuery("SELECT * FROM "+VocSchema.TABLE_NAME+" ORDER BY "+VocSchema.COUNT+" DESC;",null);
         int size=c.getCount();
         if(size>0)
         {
+            DBSIZE=size;
             c.moveToFirst();
             datas=new InputData[size];
             map=new int[size+1];
@@ -112,7 +113,12 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                 c.moveToNext();
             }
         }
-        /*tring[][] tmp=new String[3][18];
+        c.close();
+        for(int i = 0 ; i < 18 ; i++){
+            Data[0][i]=datas[i];
+        }
+        /*
+        String[][] tmp=new String[3][18];
         for(int i=0;i<54;i++)
             tmp[i/18][i%18]="";
         tmp[0]= new String[]{"我","你","爸爸","媽媽","姊姊","老師","助教","同學","不","電腦","手機","平板","USB","硬碟","作業","程式","這邊","問題"};
