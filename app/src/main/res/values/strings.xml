@@ -22,5 +22,7 @@
     <string name="app_ID">ID:</string>
     <string name="app_content">Content:</string>
     <string name="app_count">Count:</string>
+    <string name="app_ID1">ID1:</string>
+    <string name="app_ID2">ID2:</string>
 </resources>
 
