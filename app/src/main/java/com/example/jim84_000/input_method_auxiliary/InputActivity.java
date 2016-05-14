@@ -7,6 +7,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,16 +29,18 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.Locale;
 
 import static android.os.StrictMode.ThreadPolicy;
 import static android.os.StrictMode.setThreadPolicy;
 
-public class InputActivity extends Activity{
+public class InputActivity extends Activity implements TextToSpeech.OnInitListener{
     public static final String IP_SERVER = "192.168.49.1";
     public static int PORT = 8988;
     private DataOutputStream out;
     private Socket socket;
-    Button btn_send,btn_next,btn_lv1,btn_load,btn_clear,btn_mwm;
+    Button btn_send,btn_next,btn_lv1,btn_load,btn_clear,btn_mwm,btn_speech;
+    boolean status_speech=false;
     Button[] btn=new Button[9];
     EditText editText;
     TextView tv_status;
@@ -80,6 +84,10 @@ public class InputActivity extends Activity{
                     RelationSchema.COUNT
             };
 
+    private TextToSpeech mTts;
+    private boolean tw=true;
+    private static final String TAG = InputMenu.class.getName();
+
     private void LoadData(){
         String[][] tmp=new String[3][18];
         for(int i=0;i<54;i++)
@@ -112,6 +120,7 @@ public class InputActivity extends Activity{
         btn_clear=(Button)findViewById(R.id.btn_clear);
         btn_load=(Button)findViewById(R.id.btn_load);
         btn_mwm=(Button)findViewById(R.id.btn_mwm);
+        btn_speech=(Button)findViewById(R.id.btn_speech);
 
         int[] btnid={R.id.btn1,R.id.btn2,R.id.btn3,R.id.btn4,R.id.btn5,R.id.btn6,R.id.btn7,R.id.btn8,R.id.btn9};
         for(int i=0;i<9;i++)
@@ -133,6 +142,19 @@ public class InputActivity extends Activity{
             @Override
             public void onClick(View v) {
                 send();
+            }
+        });
+        btn_speech.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(status_speech==false) {
+                    status_speech = true;
+                    Toast.makeText(getApplicationContext(), "開啟語音", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    status_speech = false;
+                    Toast.makeText(getApplicationContext(), "關閉語音", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -175,6 +197,8 @@ public class InputActivity extends Activity{
                 setBtnText();
             }
         });
+
+        mTts = new TextToSpeech(this,this); //TextToSpeech.OnInitListener
     }
 
     private void next_page(){
@@ -235,6 +259,7 @@ public class InputActivity extends Activity{
         catch (IOException e){
             Toast.makeText(getApplicationContext(), "斷字失敗", Toast.LENGTH_SHORT).show();
         }
+        sayHello(message);
         try {
             //傳送資料
             out.writeUTF(message);
@@ -282,6 +307,11 @@ public class InputActivity extends Activity{
         super.onDestroy();
         if(con)
             terminate();
+        if (mTts != null) {
+            mTts.stop();
+            mTts.shutdown();
+            status_speech=false;
+        }
     }
 
     @Override
@@ -289,6 +319,28 @@ public class InputActivity extends Activity{
         super.onPause();
         if(con)
             terminate();
+    }
+
+    @Override
+    public void onInit(int status) {
+        // status can be either TextToSpeech.SUCCESS or TextToSpeech.ERROR.
+        if (status == TextToSpeech.SUCCESS) {
+            int result;
+            result = mTts.setLanguage(Locale.TAIWAN);
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                // Lanuage data is missing or the language is not supported.
+                Log.e(TAG, "Language is not available.");
+            }
+        } else {
+            // Initialization failed.
+            Log.e(TAG, "Could not initialize TextToSpeech.");
+        }
+    }
+
+    private void sayHello(String hello) {
+        // Select a random hello.
+        // Drop allpending entries in the playback queue.
+        mTts.speak(hello, TextToSpeech.QUEUE_FLUSH, null);
     }
     
     
