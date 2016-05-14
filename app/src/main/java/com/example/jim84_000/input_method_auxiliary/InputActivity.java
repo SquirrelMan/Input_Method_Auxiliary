@@ -1,6 +1,8 @@
 package com.example.jim84_000.input_method_auxiliary;
 
 import android.app.Activity;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -42,15 +44,38 @@ public class InputActivity extends Activity{
     private String [] storewordspilt=new String[256];
     private int pointer_storewordspilt=0;
 
+    InputData[] datas;
+    int[] map;
+    SQLiteDatabase db;
+
     private void LoadData(){
-        String[][] tmp=new String[3][18];
+        String path="/sdcard/DB/Database.db";
+        db=SQLiteDatabase.openDatabase(path,null,SQLiteDatabase.OPEN_READWRITE);
+        Cursor c=db.rawQuery("SELECT * FROM "+DBActivity.VocSchema.TABLE_NAME+" ORDER BY "+DBActivity.VocSchema.COUNT+" DESC;",null);
+        int size=c.getCount();
+        if(size>0)
+        {
+            c.moveToFirst();
+            datas=new InputData[size];
+            map=new int[size+1];
+
+            for(int i=0;i<size;i++)
+            {
+                int id=Integer.parseInt(c.getString(c.getColumnIndex(DBActivity.VocSchema.ID)));
+                map[id]=i;
+                datas[i]=new InputData(c.getString(c.getColumnIndex(DBActivity.VocSchema.CONTENT)),id);
+
+                c.moveToNext();
+            }
+        }
+        /*tring[][] tmp=new String[3][18];
         for(int i=0;i<54;i++)
             tmp[i/18][i%18]="";
         tmp[0]= new String[]{"我","你","爸爸","媽媽","姊姊","老師","助教","同學","不","電腦","手機","平板","USB","硬碟","作業","程式","這邊","問題"};
         tmp[1]= new String[]{"想","要","是","的","們","好","好像","不舒服","請","有","沒","了解","謝謝!","","","","",""};
         tmp[2]= new String[]{"上廁所","吃飯","喝水","用","拿","睡覺","幫忙","嗎","說","問","寫","了","麻煩","一個","","","",""};
         for(int i=0;i<54;i++)
-            Data[i/18][i%18]=new InputData(tmp[i/18][i%18]);
+            Data[i/18][i%18]=new InputData(tmp[i/18][i%18]);*/
     }
 
 
