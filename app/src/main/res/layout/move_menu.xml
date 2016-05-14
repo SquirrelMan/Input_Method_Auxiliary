@@ -6,23 +6,30 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="連線模式"
-        android:id="@+id/btn_mode1" />
+        android:text="搬動本地至外部"
+        android:id="@+id/btn_moveintoout" />
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="本地模式"
-        android:id="@+id/btn_mode2" />
+        android:text="複製本地至外部"
+        android:id="@+id/btn_copyintoout" />
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="資料庫"
-        android:id="@+id/btn_mode3" />
+        android:text="搬動外部至本地"
+        android:id="@+id/btn_moveouttoin" />
+
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="資料轉移"
-        android:id="@+id/btn_mode4" />
+        android:text="複製外部至本地"
+        android:id="@+id/btn_copyouttoin" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="刪除本地"
+        android:id="@+id/btn_deletein" />
 </LinearLayout>
