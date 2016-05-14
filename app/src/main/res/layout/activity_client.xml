@@ -60,6 +60,13 @@
                 android:layout_height="40dp"
                 android:text="連接腦波"
                 android:id="@+id/btn_mwm" />
+
+            <Button
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="90dp"
+                android:layout_height="40dp"
+                android:text="連接語音"
+                android:id="@+id/btn_speech" />
         </LinearLayout>
     </HorizontalScrollView>
 
