@@ -1,9 +1,14 @@
 package com.example.jim84_000.input_method_auxiliary;
 
 import android.app.Activity;
+import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,16 +29,18 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.Locale;
 
 import static android.os.StrictMode.ThreadPolicy;
 import static android.os.StrictMode.setThreadPolicy;
 
-public class InputActivity extends Activity{
+public class InputActivity extends Activity implements TextToSpeech.OnInitListener{
     public static final String IP_SERVER = "192.168.49.1";
     public static int PORT = 8988;
     private DataOutputStream out;
     private Socket socket;
-    Button btn_send,btn_next,btn_lv1,btn_load,btn_clear,btn_mwm;
+    Button btn_send,btn_next,btn_lv1,btn_load,btn_clear,btn_mwm,btn_speech;
+    boolean status_speech=false;
     Button[] btn=new Button[9];
     EditText editText;
     TextView tv_status;
@@ -47,6 +54,43 @@ public class InputActivity extends Activity{
     InputData[] datas;
     int[] map;
     SQLiteDatabase db;
+
+    public static final int _DBVersion = 1; //<-- 版本
+    public static final String _DBName="Database.db";
+    DBConnection helper= new DBConnection(this);
+    public int id_this;
+    public int id_this2;
+    public interface VocSchema {
+        String TABLE_NAME = "Voc";          //Table Name
+        String ID = "_id";                    //ID
+        String CONTENT = "content";       //CONTENT
+        String COUNT = "count";           //COUNT
+    }
+
+    public interface RelationSchema {
+        String TABLE_NAME = "Relation";          //Table Name
+        String ID = "_id";                    //ID
+        String ID1 = "id1";       //ID1
+        String ID2 = "id2";           //ID2
+        String COUNT = "count";       //COUNT
+    }
+    public final String[] FROM_VOC =
+            {
+                    VocSchema.ID,
+                    VocSchema.CONTENT,
+                    VocSchema.COUNT
+            };
+    public final String[] FROM_RELATION =
+            {
+                    RelationSchema.ID,
+                    RelationSchema.ID1,
+                    RelationSchema.ID2,
+                    RelationSchema.COUNT
+            };
+
+    private TextToSpeech mTts;
+    private boolean tw=true;
+    private static final String TAG = InputActivity.class.getName();
 
     private void LoadData(){
         String path="/sdcard/DB/Database.db";
@@ -81,7 +125,7 @@ public class InputActivity extends Activity{
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(final Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         //requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_client);
@@ -91,6 +135,7 @@ public class InputActivity extends Activity{
         }
         System.setProperty("mmseg.dic.path", "./src/HelloChinese/data");
         dic = Dictionary.getInstance();
+        clear_storeword_spilt();
 
         btn_send=(Button)findViewById(R.id.btn_send);
         btn_next=(Button)findViewById(R.id.btn_next);
@@ -98,6 +143,7 @@ public class InputActivity extends Activity{
         btn_clear=(Button)findViewById(R.id.btn_clear);
         btn_load=(Button)findViewById(R.id.btn_load);
         btn_mwm=(Button)findViewById(R.id.btn_mwm);
+        btn_speech=(Button)findViewById(R.id.btn_speech);
 
         int[] btnid={R.id.btn1,R.id.btn2,R.id.btn3,R.id.btn4,R.id.btn5,R.id.btn6,R.id.btn7,R.id.btn8,R.id.btn9};
         for(int i=0;i<9;i++)
@@ -119,6 +165,19 @@ public class InputActivity extends Activity{
             @Override
             public void onClick(View v) {
                 send();
+            }
+        });
+        btn_speech.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(status_speech==false) {
+                    status_speech = true;
+                    Toast.makeText(getApplicationContext(), "開啟語音", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    status_speech = false;
+                    Toast.makeText(getApplicationContext(), "關閉語音", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -161,6 +220,8 @@ public class InputActivity extends Activity{
                 setBtnText();
             }
         });
+
+        mTts = new TextToSpeech(this,this); //TextToSpeech.OnInitListener
     }
 
     private void next_page(){
@@ -181,6 +242,116 @@ public class InputActivity extends Activity{
         tv_status.setText("");
         //要傳送的字串
         String message = editText.getText().toString();
+        try {
+            run(message);
+            System.out.println(message);
+            int i=1;
+            while(check_id_ifexist(i)){
+                i++;
+            }
+            int m=1;
+            while(check_idrelation_ifexist(m)){
+                m++;
+            }
+            for(int j = 0 ; j < pointer_storewordspilt+1 ; j++){
+                ContentValues values = new ContentValues();
+                SQLiteDatabase db = helper.getWritableDatabase();
+                String tem_word;
+                if(j == pointer_storewordspilt){
+                    tem_word="#";
+                }
+                else{
+                    tem_word=storewordspilt[j];
+                }
+                if(check_voc_ifexist(tem_word)){
+                    System.out.println("check_voc_ifexist:" + tem_word);
+                    //Cursor c = db.query("Voc", FROM_VOC, "content='" + storewordspilt[j] + "'", null, null, null, null);
+
+                    Cursor c = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + tem_word + "'", null);
+                    c.moveToFirst();
+                    String id_thist = c.getString(0);
+                    String content_this = c.getString(1);
+                    int count_this = c.getInt(2);
+                    c.close();
+                    count_this++;
+                    values.put(VocSchema.ID, id_thist);
+                    values.put(VocSchema.CONTENT, content_this);
+                    values.put(VocSchema.COUNT, String.valueOf(count_this));
+                    String where = VocSchema.ID+ " = " + id_thist;
+                    db.update(VocSchema.TABLE_NAME, values, where, null);
+                }
+                else{
+                    values.put(VocSchema.ID, String.valueOf(i++));
+                    values.put(VocSchema.CONTENT, tem_word);
+                    values.put(VocSchema.COUNT, String.valueOf(1));
+                    db.insert(VocSchema.TABLE_NAME, null, values);
+                }
+                db.close();
+            }
+            for(int j = 0 ; j < pointer_storewordspilt ; j++){
+                ContentValues values = new ContentValues();
+                SQLiteDatabase db = helper.getWritableDatabase();
+                String tem_secondword;
+                if(j == pointer_storewordspilt-1){
+                    tem_secondword="#";
+                }
+                else{
+                    tem_secondword=storewordspilt[j+1];
+                }
+
+                if(check_vocrelation_ifexist(storewordspilt[j],tem_secondword)){
+                    System.out.println("check_vocrelation_ifexist:" + storewordspilt[j] + tem_secondword);
+                    //Cursor c = db.query("Voc", FROM_VOC, "content='" + storewordspilt[j] + "'", null, null, null, null);
+                    Cursor c1 = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + storewordspilt[j] + "'", null);
+                    c1.moveToFirst();
+                    String id_c1= c1.getString(0);
+                    c1.close();
+                    Cursor c2 = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + tem_secondword + "'", null);
+                    c2.moveToFirst();
+                    String id_c2= c2.getString(0);
+                    c2.close();
+
+                    Cursor c = db.rawQuery("select * from " + RelationSchema.TABLE_NAME + " where id1='" + id_c1 + "'and " + "id2='" + id_c2 + "'", null);
+                    c.moveToFirst();
+                    String id_thist = c.getString(0);
+                    String id1_this = c.getString(1);
+                    String id2_this = c.getString(2);
+                    int count_this = c.getInt(3);
+                    c.close();
+                    count_this++;
+                    values.put(RelationSchema.ID, id_thist);
+                    values.put(RelationSchema.ID1, id1_this);
+                    values.put(RelationSchema.ID2, id2_this);
+                    values.put(RelationSchema.COUNT, String.valueOf(count_this));
+                    String where = RelationSchema.ID+ " = " + id_thist;
+                    db.update(RelationSchema.TABLE_NAME, values, where, null);
+                }
+                else{
+                    System.out.println("check_vocrelation_ifnotexist:" + storewordspilt[j] + tem_secondword);
+                    Cursor c1 = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + storewordspilt[j] + "'", null);
+                    c1.moveToFirst();
+                    String id_c1= c1.getString(0);
+                    c1.close();
+                    Cursor c2 = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + tem_secondword + "'", null);
+                    c2.moveToFirst();
+                    String id_c2= c2.getString(0);
+                    c2.close();
+
+                    values.put(RelationSchema.ID, String.valueOf(m++));
+                    values.put(RelationSchema.ID1, String.valueOf(id_c1));
+                    values.put(RelationSchema.ID2, String.valueOf(id_c2));
+                    values.put(RelationSchema.COUNT, String.valueOf(1));
+                    db.insert(RelationSchema.TABLE_NAME, null, values);
+                }
+                db.close();
+            }
+            clear_storeword_spilt();
+        }
+        catch (IOException e){
+            Toast.makeText(getApplicationContext(), "斷字失敗", Toast.LENGTH_SHORT).show();
+        }
+        if(status_speech == true)
+            sayHello(message);
         try {
             //傳送資料
             out.writeUTF(message);
@@ -228,6 +399,11 @@ public class InputActivity extends Activity{
         super.onDestroy();
         if(con)
             terminate();
+        if (mTts != null) {
+            mTts.stop();
+            mTts.shutdown();
+            status_speech=false;
+        }
     }
 
     @Override
@@ -235,6 +411,28 @@ public class InputActivity extends Activity{
         super.onPause();
         if(con)
             terminate();
+    }
+
+    @Override
+    public void onInit(int status) {
+        // status can be either TextToSpeech.SUCCESS or TextToSpeech.ERROR.
+        if (status == TextToSpeech.SUCCESS) {
+            int result;
+            result = mTts.setLanguage(Locale.TAIWAN);
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                // Lanuage data is missing or the language is not supported.
+                Log.e(TAG, "Language is not available.");
+            }
+        } else {
+            // Initialization failed.
+            Log.e(TAG, "Could not initialize TextToSpeech.");
+        }
+    }
+
+    private void sayHello(String hello) {
+        // Select a random hello.
+        // Drop allpending entries in the playback queue.
+        mTts.speak(hello, TextToSpeech.QUEUE_FLUSH, null);
     }
     
     
@@ -261,10 +459,10 @@ public class InputActivity extends Activity{
         while((word=mmSeg.next())!=null) {
             if(!first) {
                 sb.append(wordSpilt);
-                storewordspilt[pointer_storewordspilt]=wordSpilt;
-                pointer_storewordspilt++;
             }
             String w = word.getString();
+            storewordspilt[pointer_storewordspilt]=w;
+            pointer_storewordspilt++;
             sb.append(w);
             first = false;
 
@@ -281,5 +479,88 @@ public class InputActivity extends Activity{
         }
         else
             return "";
+    }
+
+    public static class DBConnection extends SQLiteOpenHelper {
+        private DBConnection(Context ctx) {
+            super(ctx, _DBName,null, _DBVersion);
+        }
+        public void onCreate(SQLiteDatabase db) {
+
+            String sql = "CREATE TABLE " + VocSchema.TABLE_NAME + " ("
+                    + VocSchema.ID  + " INTEGER primary key autoincrement, "
+                    + VocSchema.CONTENT + " text unique not null, "
+                    + VocSchema.COUNT + " INTEGER not null" + ");";
+            //Log.i("haiyang:createDB=", sql);
+            db.execSQL(sql);
+
+            String sql2 = "CREATE TABLE " + RelationSchema.TABLE_NAME + " ("
+                    + RelationSchema.ID  + " INTEGER primary key autoincrement, "
+                    + RelationSchema.ID1 + " INTEGER not null, "
+                    + RelationSchema.ID2 + " INTEGER not null, "
+                    + RelationSchema.COUNT + " INTEGER not null" + ");";
+            //Log.i("haiyang:createDB=", sql);
+            db.execSQL(sql2);
+        }
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            // TODO Auto-generated method stub
+        }
+    }
+
+    public boolean check_id_ifexist(int tid){
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor mCount = db.rawQuery("select count(*) from " + VocSchema.TABLE_NAME + " where _id='" + tid + "'", null);
+        mCount.moveToFirst();
+        int count= mCount.getInt(0);
+        mCount.close();
+        System.out.println("id_Count:"+String.valueOf(count));
+        if(count >= 1)
+            return true;
+        else
+            return false;
+    }
+    public boolean check_idrelation_ifexist(int tid){
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor mCount = db.rawQuery("select count(*) from " + RelationSchema.TABLE_NAME + " where _id='" + tid + "'", null);
+        mCount.moveToFirst();
+        int count= mCount.getInt(0);
+        mCount.close();
+        System.out.println("Relation_id_Count:"+String.valueOf(count));
+        if(count >= 1)
+            return true;
+        else
+            return false;
+    }
+    public boolean check_voc_ifexist(String _content){
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor mCount = db.rawQuery("select count(*) from " + VocSchema.TABLE_NAME + " where content='" + _content + "'", null);
+        mCount.moveToFirst();
+        int count= mCount.getInt(0);
+        mCount.close();
+        System.out.println("voc_Count:"+String.valueOf(count));
+        if(count >= 1)
+            return true;
+        else
+            return false;
+    }
+    public boolean check_vocrelation_ifexist(String _content,String _content2){
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor c1 = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + _content + "'", null);
+        c1.moveToFirst();
+        int id_c1= c1.getInt(0);
+        c1.close();
+        Cursor c2 = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + _content2 + "'", null);
+        c2.moveToFirst();
+        int id_c2= c2.getInt(0);
+        c2.close();
+        Cursor mcount = db.rawQuery("select count(*) from " + RelationSchema.TABLE_NAME + " where id1='" + id_c1 + "' and " + "id2='" + id_c2 + "'", null);
+        mcount.moveToFirst();
+        int count=mcount.getInt(0);
+        mcount.close();
+        System.out.println("vocrelation_Count:"+String.valueOf(count));
+        if(count >= 1)
+            return true;
+        else
+            return false;
     }
 }
