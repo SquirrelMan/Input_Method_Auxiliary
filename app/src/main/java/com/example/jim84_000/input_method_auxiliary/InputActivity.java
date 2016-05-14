@@ -53,7 +53,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
 
     public static final int _DBVersion = 1; //<-- 版本
     public static final String _DBName="Database.db";
-    DBConnection helper= new DBConnection(this);;
+    DBConnection helper= new DBConnection(this);
     public int id_this;
     public int id_this2;
     public interface VocSchema {
@@ -86,7 +86,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
 
     private TextToSpeech mTts;
     private boolean tw=true;
-    private static final String TAG = InputMenu.class.getName();
+    private static final String TAG = InputActivity.class.getName();
 
     private void LoadData(){
         String[][] tmp=new String[3][18];
