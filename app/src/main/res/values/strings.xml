@@ -19,9 +19,8 @@
     <string name="app_update">Update</string>
     <string name="app_delete">Delete</string>
     <string name="app_clear">Clear</string>
-    <string name="app_username">ID:</string>
-    <string name="app_telephone">Content:</string>
-    <string name="app_address">Count:</string>
-    <string name="app_mail">Mail Address:</string>
+    <string name="app_ID">ID:</string>
+    <string name="app_content">Content:</string>
+    <string name="app_count">Count:</string>
 </resources>
 
