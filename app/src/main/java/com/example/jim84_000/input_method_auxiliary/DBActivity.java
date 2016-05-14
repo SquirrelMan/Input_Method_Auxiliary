@@ -269,7 +269,7 @@ public class DBActivity extends Activity{
 
             String sql = "CREATE TABLE " + VocSchema.TABLE_NAME + " ("
                     + VocSchema.ID  + " INTEGER primary key autoincrement, "
-                    + VocSchema.CONTENT + " text not null, "
+                    + VocSchema.CONTENT + " text unique not null, "
                     + VocSchema.COUNT + " INTEGER not null" + ");";
             //Log.i("haiyang:createDB=", sql);
             db.execSQL(sql);

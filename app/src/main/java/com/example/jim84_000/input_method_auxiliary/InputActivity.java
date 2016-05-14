@@ -1,6 +1,11 @@
 package com.example.jim84_000.input_method_auxiliary;
 
 import android.app.Activity;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -42,6 +47,39 @@ public class InputActivity extends Activity{
     private String [] storewordspilt=new String[256];
     private int pointer_storewordspilt=0;
 
+    public static final int _DBVersion = 1; //<-- 版本
+    public static final String _DBName="Database.db";
+    DBConnection helper= new DBConnection(this);;
+    public int id_this;
+    public int id_this2;
+    public interface VocSchema {
+        String TABLE_NAME = "Voc";          //Table Name
+        String ID = "_id";                    //ID
+        String CONTENT = "content";       //CONTENT
+        String COUNT = "count";           //COUNT
+    }
+
+    public interface RelationSchema {
+        String TABLE_NAME = "Relation";          //Table Name
+        String ID = "_id";                    //ID
+        String ID1 = "id1";       //ID1
+        String ID2 = "id2";           //ID2
+        String COUNT = "count";       //COUNT
+    }
+    public final String[] FROM_VOC =
+            {
+                    VocSchema.ID,
+                    VocSchema.CONTENT,
+                    VocSchema.COUNT
+            };
+    public final String[] FROM_RELATION =
+            {
+                    RelationSchema.ID,
+                    RelationSchema.ID1,
+                    RelationSchema.ID2,
+                    RelationSchema.COUNT
+            };
+
     private void LoadData(){
         String[][] tmp=new String[3][18];
         for(int i=0;i<54;i++)
@@ -56,7 +94,7 @@ public class InputActivity extends Activity{
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(final Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         //requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_client);
@@ -66,6 +104,7 @@ public class InputActivity extends Activity{
         }
         System.setProperty("mmseg.dic.path", "./src/HelloChinese/data");
         dic = Dictionary.getInstance();
+        clear_storeword_spilt();
 
         btn_send=(Button)findViewById(R.id.btn_send);
         btn_next=(Button)findViewById(R.id.btn_next);
@@ -157,6 +196,27 @@ public class InputActivity extends Activity{
         //要傳送的字串
         String message = editText.getText().toString();
         try {
+            run(message);
+            System.out.println(message);
+            int i=1;
+            while(check_voc_ifexist(i)){
+                i++;
+            }
+            for(int j = 0 ; j < pointer_storewordspilt ; j++){
+                ContentValues values = new ContentValues();
+                values.put(VocSchema.ID, String.valueOf(i++));
+                values.put(VocSchema.CONTENT, storewordspilt[j]);
+                values.put(VocSchema.COUNT, String.valueOf(0));
+                SQLiteDatabase db = helper.getWritableDatabase();
+                db.insert(VocSchema.TABLE_NAME, null, values);
+                db.close();
+            }
+            clear_storeword_spilt();
+        }
+        catch (IOException e){
+            Toast.makeText(getApplicationContext(), "斷字失敗", Toast.LENGTH_SHORT).show();
+        }
+        try {
             //傳送資料
             out.writeUTF(message);
             Toast.makeText(this,"成功傳送!",Toast.LENGTH_SHORT).show();
@@ -236,10 +296,10 @@ public class InputActivity extends Activity{
         while((word=mmSeg.next())!=null) {
             if(!first) {
                 sb.append(wordSpilt);
-                storewordspilt[pointer_storewordspilt]=wordSpilt;
-                pointer_storewordspilt++;
             }
             String w = word.getString();
+            storewordspilt[pointer_storewordspilt]=w;
+            pointer_storewordspilt++;
             sb.append(w);
             first = false;
 
@@ -256,5 +316,44 @@ public class InputActivity extends Activity{
         }
         else
             return "";
+    }
+
+    public static class DBConnection extends SQLiteOpenHelper {
+        private DBConnection(Context ctx) {
+            super(ctx, _DBName,null, _DBVersion);
+        }
+        public void onCreate(SQLiteDatabase db) {
+
+            String sql = "CREATE TABLE " + VocSchema.TABLE_NAME + " ("
+                    + VocSchema.ID  + " INTEGER primary key autoincrement, "
+                    + VocSchema.CONTENT + " text unique not null, "
+                    + VocSchema.COUNT + " INTEGER not null" + ");";
+            //Log.i("haiyang:createDB=", sql);
+            db.execSQL(sql);
+
+            String sql2 = "CREATE TABLE " + RelationSchema.TABLE_NAME + " ("
+                    + RelationSchema.ID  + " INTEGER primary key autoincrement, "
+                    + RelationSchema.ID1 + " INTEGER not null, "
+                    + RelationSchema.ID2 + " INTEGER not null, "
+                    + RelationSchema.COUNT + " INTEGER not null" + ");";
+            //Log.i("haiyang:createDB=", sql);
+            db.execSQL(sql2);
+        }
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            // TODO Auto-generated method stub
+        }
+    }
+
+    public boolean check_voc_ifexist(int tid){
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor mCount = db.rawQuery("select count(*) from " + VocSchema.TABLE_NAME + " where _id='" + tid + "'", null);
+        mCount.moveToFirst();
+        int count= mCount.getInt(0);
+        mCount.close();
+        System.out.println("Count:"+String.valueOf(count));
+        if(count >= 1)
+            return true;
+        else
+            return false;
     }
 }
