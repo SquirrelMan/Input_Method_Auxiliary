@@ -1,7 +1,10 @@
 package com.example.jim84_000.input_method_auxiliary;
 
 import android.app.Activity;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -42,15 +45,43 @@ public class InputActivity extends Activity{
     private String [] storewordspilt=new String[256];
     private int pointer_storewordspilt=0;
 
+    SQLiteDatabase db;
+    final String DB_PATH="/sdcard/DB/Database.db";
+    InputData[] datas;
+    int[] map;//To map id to datas index
+    int DBSize=0;
+    InputData[] candidate=new InputData[9];
+    InputData[] next;
+
     private void LoadData(){
-        String[][] tmp=new String[3][18];
+
+        db=SQLiteDatabase.openDatabase(DB_PATH, null, SQLiteDatabase.OPEN_READWRITE);
+        Cursor cursor=db.rawQuery("SELECT * FROM " + DBActivity.VocSchema.TABLE_NAME +
+                " ORDER BY "+DBActivity.VocSchema.COUNT+" DESC;", null);
+        int size=cursor.getCount();
+        if(size>0)
+        {
+            DBSize=size;
+            datas=new InputData[size];
+            map=new int[size+1];
+            cursor.moveToFirst();
+            for (int i=0;i<size;i++)
+            {
+                int id=Integer.parseInt(cursor.getString(cursor.getColumnIndex(DBActivity.VocSchema.ID)));
+                datas[i]=new InputData(cursor.getString(cursor.getColumnIndex(DBActivity.VocSchema.CONTENT)),id);
+                map[id]=i;
+                cursor.moveToNext();
+            }
+        }
+        cursor.close();
+       /* String[][] tmp=new String[3][18];
         for(int i=0;i<54;i++)
             tmp[i/18][i%18]="";
         tmp[0]= new String[]{"我","你","爸爸","媽媽","姊姊","老師","助教","同學","不","電腦","手機","平板","USB","硬碟","作業","程式","這邊","問題"};
         tmp[1]= new String[]{"想","要","是","的","們","好","好像","不舒服","請","有","沒","了解","謝謝!","","","","",""};
         tmp[2]= new String[]{"上廁所","吃飯","喝水","用","拿","睡覺","幫忙","嗎","說","問","寫","了","麻煩","一個","","","",""};
         for(int i=0;i<54;i++)
-            Data[i/18][i%18]=new InputData(tmp[i/18][i%18]);
+            Data[i/18][i%18]=new InputData(tmp[i/18][i%18]);*/
     }
 
 
@@ -76,14 +107,16 @@ public class InputActivity extends Activity{
 
         int[] btnid={R.id.btn1,R.id.btn2,R.id.btn3,R.id.btn4,R.id.btn5,R.id.btn6,R.id.btn7,R.id.btn8,R.id.btn9};
         for(int i=0;i<9;i++)
+        {
             btn[i]=(Button)findViewById(btnid[i]);
+            candidate[i]=new InputData();
+        }
 
         editText=(EditText)findViewById(R.id.editText);
         tv_status=(TextView)findViewById(R.id.sender_status);
         tv_status.setText("");
-        String str="test測試123";
-        // editText.setText(str);
-        //editText.setSelection(str.length());
+        if(!con)
+            btn_send.setText("Speak");
         btn_clear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -93,7 +126,8 @@ public class InputActivity extends Activity{
         btn_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                send();
+                if(con)
+                    send();
             }
         });
 
@@ -102,8 +136,8 @@ public class InputActivity extends Activity{
         }catch (Exception e){
             System.out.println(e.toString());
         }
-        System.out.println(Data.length*Data[2].length);
 
+        setCandidate(datas,DBSize);
         setBtnText();
 
         for(int i=0;i<9;i++){
@@ -111,11 +145,29 @@ public class InputActivity extends Activity{
             btn[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String s=editText.getText().toString() + btn[arg].getText().toString();
+                    String s = editText.getText().toString() + btn[arg].getText().toString();
                     editText.setText(s);
                     editText.setSelection(s.length());
-                    level=(level+1)%3;
-                    offset=0;
+                    //level=(level+1)%3;
+                    //offset=0;
+                    String id = String.valueOf(candidate[arg].id);
+                    String query1 = "SELECT " + DBActivity.RelationSchema.ID2 + " FROM " + DBActivity.RelationSchema.TABLE_NAME
+                            + " WHERE " + DBActivity.RelationSchema.ID1 + " = '" + id + "'";
+                    String query2 = "SELECT " + DBActivity.VocSchema.ID + " FROM " + DBActivity.VocSchema.TABLE_NAME
+                            + " WHERE " + DBActivity.VocSchema.ID + " IN ( " + query1 + " ) ORDER BY " + DBActivity.VocSchema.COUNT + " DESC;";
+                    Cursor cursor = db.rawQuery(query2, null);
+                    int size = cursor.getCount();
+                    if (size > 0) {
+                        next = new InputData[size];
+                        for (int i = 0; i < size; i++) {
+
+                            int nid=Integer.parseInt(cursor.getString(cursor.getColumnIndex(DBActivity.VocSchema.ID)));
+                            next[i]=datas[map[nid]];
+                            cursor.moveToNext();
+                        }
+
+                    }
+                    setCandidate(datas, DBSize);
                     setBtnText();
                 }
             });
@@ -131,24 +183,40 @@ public class InputActivity extends Activity{
         btn_lv1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                level = 0;
+                //level = 0;
                 offset = 0;
+                setCandidate(datas,DBSize);
                 setBtnText();
             }
         });
     }
 
     private void next_page(){
-        level=(level+offset/9)%3;
-        offset=((offset+9)%2)*9;
+        //level=(level+offset/9)%3;
+        //offset=((offset+9)%2)*9;
+        setCandidate(datas,DBSize);
         setBtnText();
     }
 
     private void setBtnText()
     {
         for(int i=0;i<9;i++){
-            btn[i].setText(Data[level][i+offset].text);
+            //btn[i].setText(Data[level][i+offset].text);
+            btn[i].setText(candidate[i].text);
         }
+    }
+
+    private void setCandidate(InputData[] val,int size){
+        for(int i=0;i<9;i++)
+        {
+            candidate[i].text="";
+            candidate[i].id=0;
+            if(i+offset<size)
+                candidate[i]=val[i+offset];
+        }
+        offset+=9;
+        if(offset>size)
+            offset=0;
     }
 
     private void send(){
@@ -184,12 +252,16 @@ public class InputActivity extends Activity{
     }
 
     private void terminate(){
-        try {
-            out.close();
-            socket.close();
-        }catch (Exception e){
-            tv_status.setText(e.toString());
+        if(con)
+        {
+            try {
+                out.close();
+                socket.close();
+            }catch (Exception e){
+                tv_status.setText(e.toString());
+            }
         }
+
     }
     @Override
     protected void onStart(){

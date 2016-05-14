@@ -3,7 +3,7 @@ package com.example.jim84_000.input_method_auxiliary;
 
 public class InputData {
     public String text="";
-    public int freq=0;
+    public int id=0;
     public InputData(){
 
     }
@@ -12,9 +12,9 @@ public class InputData {
         setText(s);
     }
 
-    public InputData(String s,int f){
+    public InputData(String s,int sid){
         text=s;
-        freq=f;
+        id=sid;
     }
 
     public void setText(String s){
