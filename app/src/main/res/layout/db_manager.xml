@@ -41,11 +41,11 @@
                     <EditText android:id="@+id/EditText11" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText>
                 </TableRow>
                 <TableRow android:id="@+id/TableRow12" android:layout_width="wrap_content" android:layout_height="wrap_content">
-                    <TextView android:id="@+id/TextView12" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/app_content"></TextView>
+                    <TextView android:id="@+id/TextView12" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/app_ID1"></TextView>
                     <EditText android:id="@+id/EditText12" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText>
                 </TableRow>
                 <TableRow android:id="@+id/TableRow13" android:layout_width="wrap_content" android:layout_height="wrap_content">
-                    <TextView android:id="@+id/TextView13" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/app_count"></TextView>
+                    <TextView android:id="@+id/TextView13" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/app_ID2"></TextView>
                     <EditText android:id="@+id/EditText13" android:layout_width="wrap_content" android:layout_height="wrap_content"></EditText>
                 </TableRow>
                 <TableRow android:id="@+id/TableRow14" android:layout_width="wrap_content" android:layout_height="wrap_content">
