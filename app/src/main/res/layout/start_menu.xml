@@ -20,4 +20,9 @@
         android:layout_height="wrap_content"
         android:text="資料庫"
         android:id="@+id/btn_mode3" />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="資料轉移"
+        android:id="@+id/btn_mode4" />
 </LinearLayout>
