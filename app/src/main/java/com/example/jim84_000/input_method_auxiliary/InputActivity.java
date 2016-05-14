@@ -199,16 +199,35 @@ public class InputActivity extends Activity{
             run(message);
             System.out.println(message);
             int i=1;
-            while(check_voc_ifexist(i)){
+            while(check_id_ifexist(i)){
                 i++;
             }
             for(int j = 0 ; j < pointer_storewordspilt ; j++){
                 ContentValues values = new ContentValues();
-                values.put(VocSchema.ID, String.valueOf(i++));
-                values.put(VocSchema.CONTENT, storewordspilt[j]);
-                values.put(VocSchema.COUNT, String.valueOf(0));
                 SQLiteDatabase db = helper.getWritableDatabase();
-                db.insert(VocSchema.TABLE_NAME, null, values);
+                if(check_voc_ifexist(storewordspilt[j])){
+                    System.out.println("check_voc_ifexist:" + storewordspilt[j]);
+                    //Cursor c = db.query("Voc", FROM_VOC, "content='" + storewordspilt[j] + "'", null, null, null, null);
+
+                    Cursor c = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + storewordspilt[j] + "'", null);
+                    c.moveToFirst();
+                    String id_thist = c.getString(0);
+                    String content_this = c.getString(1);
+                    int count_this = c.getInt(2);
+                    c.close();
+                    count_this++;
+                    values.put(VocSchema.ID, id_thist);
+                    values.put(VocSchema.CONTENT, content_this);
+                    values.put(VocSchema.COUNT, String.valueOf(count_this));
+                    String where = VocSchema.ID+ " = " + id_thist;
+                    db.update(VocSchema.TABLE_NAME, values, where, null);
+                }
+                else{
+                    values.put(VocSchema.ID, String.valueOf(i++));
+                    values.put(VocSchema.CONTENT, storewordspilt[j]);
+                    values.put(VocSchema.COUNT, String.valueOf(1));
+                    db.insert(VocSchema.TABLE_NAME, null, values);
+                }
                 db.close();
             }
             clear_storeword_spilt();
@@ -344,13 +363,25 @@ public class InputActivity extends Activity{
         }
     }
 
-    public boolean check_voc_ifexist(int tid){
+    public boolean check_id_ifexist(int tid){
         SQLiteDatabase db = helper.getWritableDatabase();
         Cursor mCount = db.rawQuery("select count(*) from " + VocSchema.TABLE_NAME + " where _id='" + tid + "'", null);
         mCount.moveToFirst();
         int count= mCount.getInt(0);
         mCount.close();
-        System.out.println("Count:"+String.valueOf(count));
+        System.out.println("id_Count:"+String.valueOf(count));
+        if(count >= 1)
+            return true;
+        else
+            return false;
+    }
+    public boolean check_voc_ifexist(String _content){
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor mCount = db.rawQuery("select count(*) from " + VocSchema.TABLE_NAME + " where content='" + _content + "'", null);
+        mCount.moveToFirst();
+        int count= mCount.getInt(0);
+        mCount.close();
+        System.out.println("voc_Count:"+String.valueOf(count));
         if(count >= 1)
             return true;
         else
