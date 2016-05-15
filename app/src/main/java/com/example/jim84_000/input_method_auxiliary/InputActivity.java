@@ -54,7 +54,6 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     InputData[] datas,currentDatas=new InputData[9];
     int[] map;
     SQLiteDatabase db;
-    int DBSIZE;
 
 
     DBConnection helper= new DBConnection(this);
@@ -68,11 +67,11 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
 
     private void LoadData(){
         SQLiteDatabase db = helper.getWritableDatabase();
+        //db=SQLiteDatabase.openDatabase("/sdcard/DB/Database.db",null,SQLiteDatabase.OPEN_READWRITE);
         Cursor c=db.rawQuery("SELECT * FROM "+DBConnection.VocSchema.TABLE_NAME+" ORDER BY "+DBConnection.VocSchema.COUNT+" DESC;",null);
         int size=c.getCount();
         if(size>0)
         {
-            DBSIZE=size;
             c.moveToFirst();
             datas=new InputData[size];
             map=new int[size+1];
@@ -88,17 +87,8 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         }
         c.close();
         for(int i = 0 ; i < 18 ; i++){
-            Data[0][i]=datas[i];
+           Data[0][i]=datas[i];
         }
-        /*
-        String[][] tmp=new String[3][18];
-        for(int i=0;i<54;i++)
-            tmp[i/18][i%18]="";
-        tmp[0]= new String[]{"我","你","爸爸","媽媽","姊姊","老師","助教","同學","不","電腦","手機","平板","USB","硬碟","作業","程式","這邊","問題"};
-        tmp[1]= new String[]{"想","要","是","的","們","好","好像","不舒服","請","有","沒","了解","謝謝!","","","","",""};
-        tmp[2]= new String[]{"上廁所","吃飯","喝水","用","拿","睡覺","幫忙","嗎","說","問","寫","了","麻煩","一個","","","",""};
-        for(int i=0;i<54;i++)
-            Data[i/18][i%18]=new InputData(tmp[i/18][i%18]);*/
     }
 
     private void setCurrentDatas(InputData[] a,int size)
@@ -144,14 +134,15 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
 
         int[] btnid={R.id.btn1,R.id.btn2,R.id.btn3,R.id.btn4,R.id.btn5,R.id.btn6,R.id.btn7,R.id.btn8,R.id.btn9};
         for(int i=0;i<9;i++)
+        {
             btn[i]=(Button)findViewById(btnid[i]);
+            currentDatas[i]=new InputData();
+        }
 
         editText=(EditText)findViewById(R.id.editText);
         tv_status=(TextView)findViewById(R.id.sender_status);
         tv_status.setText("");
-        String str="test測試123";
-        // editText.setText(str);
-        //editText.setSelection(str.length());
+
         btn_clear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -178,14 +169,15 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             }
         });
         mTts = new TextToSpeech(this,this); //TextToSpeech.OnInitListener
+
         try{
             LoadData();
         }catch (Exception e){
             System.out.println(e.toString());
         }
-        System.out.println(Data.length*Data[2].length);
 
-        setCurrentDatas(datas, DBSIZE);
+
+        setCurrentDatas(datas, datas.length);
         setBtnText();
 
         for(int i=0;i<9;i++){
@@ -198,7 +190,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                     editText.setSelection(s.length());
                     //level=(level+1)%3;
                     //offset=0;
-                    setCurrentDatas(datas,DBSIZE);
+                    setCurrentDatas(datas,datas.length);
                     setBtnText();
                 }
             });
@@ -216,7 +208,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             public void onClick(View v) {
                 level = 0;
                 offset = 0;
-                setCurrentDatas(datas,DBSIZE);
+                setCurrentDatas(datas,datas.length);
                 setBtnText();
             }
         });
@@ -225,7 +217,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     private void next_page(){
         //level=(level+offset/9)%3;
         //offset=((offset+9)%2)*9;
-        setCurrentDatas(datas,DBSIZE);
+        setCurrentDatas(datas,datas.length);
         setBtnText();
     }
 
