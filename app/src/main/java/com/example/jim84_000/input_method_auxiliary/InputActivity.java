@@ -66,8 +66,8 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     private static final String TAG = InputActivity.class.getName();
 
     private void LoadData(){
-        //SQLiteDatabase db = helper.getWritableDatabase();
-        db=SQLiteDatabase.openDatabase("/sdcard/DB/Database.db",null,SQLiteDatabase.OPEN_READWRITE);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        //db=SQLiteDatabase.openDatabase("/sdcard/DB/Database.db",null,SQLiteDatabase.OPEN_READWRITE);
         Cursor c=db.rawQuery("SELECT * FROM "+DBConnection.VocSchema.TABLE_NAME+" ORDER BY "+DBConnection.VocSchema.COUNT+" DESC;",null);
         int size=c.getCount();
         if(size>0)
