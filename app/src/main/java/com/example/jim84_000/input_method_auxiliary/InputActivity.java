@@ -54,7 +54,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     InputData[] datas,currentDatas=new InputData[9];
     int[] map;
     SQLiteDatabase db;
-
+    int[][] next_id;
 
     DBConnection helper= new DBConnection(this);
     public int id_this;
@@ -66,21 +66,43 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     private static final String TAG = InputActivity.class.getName();
 
     private void LoadData(){
-        SQLiteDatabase db = helper.getWritableDatabase();
-        //db=SQLiteDatabase.openDatabase("/sdcard/DB/Database.db",null,SQLiteDatabase.OPEN_READWRITE);
+        //SQLiteDatabase db = helper.getWritableDatabase();
+        db=SQLiteDatabase.openDatabase("/sdcard/DB/Database.db",null,SQLiteDatabase.OPEN_READWRITE);
         Cursor c=db.rawQuery("SELECT * FROM "+DBConnection.VocSchema.TABLE_NAME+" ORDER BY "+DBConnection.VocSchema.COUNT+" DESC;",null);
         int size=c.getCount();
         if(size>0)
         {
+            String query1,query2;
             c.moveToFirst();
             datas=new InputData[size];
             map=new int[size+1];
+            next_id=new int[size+1][];
 
             for(int i=0;i<size;i++)
             {
                 int id=Integer.parseInt(c.getString(c.getColumnIndex(DBConnection.VocSchema.ID)));
                 map[id]=i;
                 datas[i]=new InputData(c.getString(c.getColumnIndex(DBConnection.VocSchema.CONTENT)),id);
+                //================================================================================================================
+                query1="select "+DBConnection.RelationSchema.ID2+" from "+DBConnection.RelationSchema.TABLE_NAME
+                        +" where "+DBConnection.RelationSchema.ID1+" = '"+String.valueOf(id)+"'";
+                query2="select "+DBConnection.VocSchema.ID+" from "+DBConnection.VocSchema.TABLE_NAME
+                        +" where "+DBConnection.VocSchema.ID+" in ( "+query1+" ) order by "+DBConnection.VocSchema.COUNT+" desc;";
+                Cursor c2=db.rawQuery(query2,null);
+                int size2=c2.getCount();
+                next_id[id]=new int[size2];
+                if(size2>0)
+                {
+                    c2.moveToFirst();
+                    for(int j=0;j<size2;j++)
+                    {
+                        next_id[id][j]=Integer.parseInt(c2.getString(0));
+                        c2.moveToNext();
+                    }
+                }
+                c2.close();
+                System.out.println(next_id[id].length);
+                //================================================================================================================
 
                 c.moveToNext();
             }
