@@ -44,9 +44,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     Button[] btn=new Button[9];
     EditText editText;
     TextView tv_status;
-    InputData[][] Data=new InputData[3][];
     public static boolean con=false;
-    int level=0,offset=0; //level=0,1,2 offset=0,9
     protected Dictionary dic;
     private String [] storewordspilt=new String[256];
     private int pointer_storewordspilt=0;
@@ -55,6 +53,8 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     int[] map;
     SQLiteDatabase db;
     int[][] next_id;
+    int current_id=0;//0 denote main level
+    int offset=0; // offset=9n
 
     DBConnection helper= new DBConnection(this);
     public int id_this;
@@ -77,10 +77,12 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             datas=new InputData[size];
             map=new int[size+1];
             next_id=new int[size+1][];
+            next_id[0]=new int[size];
 
             for(int i=0;i<size;i++)
             {
                 int id=Integer.parseInt(c.getString(c.getColumnIndex(DBConnection.VocSchema.ID)));
+                next_id[0][i]=id;
                 map[id]=i;
                 datas[i]=new InputData(c.getString(c.getColumnIndex(DBConnection.VocSchema.CONTENT)),id);
                 //================================================================================================================
@@ -101,26 +103,31 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                     }
                 }
                 c2.close();
-                System.out.println(next_id[id].length);
                 //================================================================================================================
 
                 c.moveToNext();
             }
         }
         c.close();
-        for(int i = 0 ; i < 18 ; i++){
-           Data[0][i]=datas[i];
-        }
     }
 
-    private void setCurrentDatas(InputData[] a,int size)
+    //===============================================================================================
+    private void setCurrentDatas(int id)
     {
+        int size=next_id[id].length;
+        if(size==0)
+        {
+            offset = 0;
+            current_id =id= 0;
+            size=next_id[0].length;
+        }
         for(int i=0;i<9;i++)
         {
             if(offset+i<size)
             {
-                currentDatas[i].text=a[i+offset].text;
-                currentDatas[i].id=a[i+offset].id;
+                int position=map[next_id[id][i+offset]];
+                currentDatas[i].text=datas[position].text;
+                currentDatas[i].id=datas[position].id;
             }
             else
             {
@@ -129,10 +136,13 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             }
         }
         offset+=9;
-        if(offset > size)
-            offset=0;
+        if(offset > size) {
+            offset = 0;
+            current_id = 0;
+        }
+        setBtnText();
     }
-
+    //===============================================================================================
     @Override
     protected void onCreate(final Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -199,8 +209,8 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         }
 
 
-        setCurrentDatas(datas, datas.length);
-        setBtnText();
+        setCurrentDatas(current_id);
+        //setBtnText();
 
         for(int i=0;i<9;i++){
             final int arg = i;
@@ -210,10 +220,10 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                     String s=editText.getText().toString() + btn[arg].getText().toString();
                     editText.setText(s);
                     editText.setSelection(s.length());
-                    //level=(level+1)%3;
-                    //offset=0;
-                    setCurrentDatas(datas,datas.length);
-                    setBtnText();
+                    offset=0;
+                    current_id=currentDatas[arg].id;
+                    setCurrentDatas(current_id);
+                    //setBtnText();
                 }
             });
 
@@ -228,19 +238,17 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         btn_lv1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                level = 0;
+                current_id = 0;
                 offset = 0;
-                setCurrentDatas(datas,datas.length);
-                setBtnText();
+                setCurrentDatas(current_id);
+                //setBtnText();
             }
         });
     }
 
     private void next_page(){
-        //level=(level+offset/9)%3;
-        //offset=((offset+9)%2)*9;
-        setCurrentDatas(datas,datas.length);
-        setBtnText();
+        setCurrentDatas(current_id);
+        //setBtnText();
     }
 
     private void setBtnText()
