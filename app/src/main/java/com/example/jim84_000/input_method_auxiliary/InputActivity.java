@@ -177,7 +177,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                 }
             }
         });
-
+        mTts = new TextToSpeech(this,this); //TextToSpeech.OnInitListener
         try{
             LoadData();
         }catch (Exception e){
