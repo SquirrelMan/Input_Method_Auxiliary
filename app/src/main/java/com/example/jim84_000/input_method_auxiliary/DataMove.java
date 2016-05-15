@@ -53,20 +53,7 @@ public class DataMove extends Activity {
     String Path_in = "/data/data/com.example.jim84_000.input_method_auxiliary/databases/";
     private static final String TAG = DataMove.class.getName();
     DBConnection helper= new DBConnection(this);
-    public interface VocSchema {
-        String TABLE_NAME = "Voc";          //Table Name
-        String ID = "_id";                    //ID
-        String CONTENT = "content";       //CONTENT
-        String COUNT = "count";           //COUNT
-    }
-
-    public interface RelationSchema {
-        String TABLE_NAME = "Relation";          //Table Name
-        String ID = "_id";                    //ID
-        String ID1 = "id1";       //ID1
-        String ID2 = "id2";           //ID2
-        String COUNT = "count";       //COUNT
-    }
+    
     private String [] storewordspilt=new String[256];
     private int pointer_storewordspilt=0;
     protected Dictionary dic;
@@ -248,24 +235,24 @@ public class DataMove extends Activity {
                         System.out.println("check_voc_ifexist:" + storewordspilt[j]);
                         //Cursor c = db.query("Voc", FROM_VOC, "content='" + storewordspilt[j] + "'", null, null, null, null);
 
-                        Cursor c = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + storewordspilt[j] + "'", null);
+                        Cursor c = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + storewordspilt[j] + "'", null);
                         c.moveToFirst();
                         String id_thist = c.getString(0);
                         String content_this = c.getString(1);
                         int count_this = c.getInt(2);
                         c.close();
                         count_this++;
-                        values.put(VocSchema.ID, id_thist);
-                        values.put(VocSchema.CONTENT, content_this);
-                        values.put(VocSchema.COUNT, String.valueOf(count_this));
-                        String where = VocSchema.ID+ " = " + id_thist;
-                        db.update(VocSchema.TABLE_NAME, values, where, null);
+                        values.put(DBConnection.VocSchema.ID, id_thist);
+                        values.put(DBConnection.VocSchema.CONTENT, content_this);
+                        values.put(DBConnection.VocSchema.COUNT, String.valueOf(count_this));
+                        String where = DBConnection.VocSchema.ID+ " = " + id_thist;
+                        db.update(DBConnection.VocSchema.TABLE_NAME, values, where, null);
                     }
                     else{
-                        values.put(VocSchema.ID, String.valueOf(i++));
-                        values.put(VocSchema.CONTENT, storewordspilt[j]);
-                        values.put(VocSchema.COUNT, String.valueOf(1));
-                        db.insert(VocSchema.TABLE_NAME, null, values);
+                        values.put(DBConnection.VocSchema.ID, String.valueOf(i++));
+                        values.put(DBConnection.VocSchema.CONTENT, storewordspilt[j]);
+                        values.put(DBConnection.VocSchema.COUNT, String.valueOf(1));
+                        db.insert(DBConnection.VocSchema.TABLE_NAME, null, values);
                     }
                     db.close();
                 }
@@ -281,31 +268,7 @@ public class DataMove extends Activity {
         }
         return ret;
     }
-    public static class DBConnection extends SQLiteOpenHelper {
-        private DBConnection(Context ctx) {
-            super(ctx, _DBName,null, _DBVersion);
-        }
-        public void onCreate(SQLiteDatabase db) {
-
-            String sql = "CREATE TABLE " + VocSchema.TABLE_NAME + " ("
-                    + VocSchema.ID  + " INTEGER primary key autoincrement, "
-                    + VocSchema.CONTENT + " text unique not null, "
-                    + VocSchema.COUNT + " INTEGER not null" + ");";
-            //Log.i("haiyang:createDB=", sql);
-            db.execSQL(sql);
-
-            String sql2 = "CREATE TABLE " + RelationSchema.TABLE_NAME + " ("
-                    + RelationSchema.ID  + " INTEGER primary key autoincrement, "
-                    + RelationSchema.ID1 + " INTEGER not null, "
-                    + RelationSchema.ID2 + " INTEGER not null, "
-                    + RelationSchema.COUNT + " INTEGER not null" + ");";
-            //Log.i("haiyang:createDB=", sql);
-            db.execSQL(sql2);
-        }
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            // TODO Auto-generated method stub
-        }
-    }
+    
     //斷字系統
     private void clear_storeword_spilt(){
         for(int i = 0 ; i < 256 ; i++){
@@ -352,7 +315,7 @@ public class DataMove extends Activity {
 
     public boolean check_id_ifexist(int tid){
         SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor mCount = db.rawQuery("select count(*) from " + VocSchema.TABLE_NAME + " where _id='" + tid + "'", null);
+        Cursor mCount = db.rawQuery("select count(*) from " + DBConnection.VocSchema.TABLE_NAME + " where _id='" + tid + "'", null);
         mCount.moveToFirst();
         int count= mCount.getInt(0);
         mCount.close();
@@ -364,7 +327,7 @@ public class DataMove extends Activity {
     }
     public boolean check_voc_ifexist(String _content){
         SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor mCount = db.rawQuery("select count(*) from " + VocSchema.TABLE_NAME + " where content='" + _content + "'", null);
+        Cursor mCount = db.rawQuery("select count(*) from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + _content + "'", null);
         mCount.moveToFirst();
         int count= mCount.getInt(0);
         mCount.close();

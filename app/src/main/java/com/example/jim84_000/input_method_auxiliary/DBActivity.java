@@ -3,10 +3,8 @@ package com.example.jim84_000.input_method_auxiliary;
 
 import android.app.Activity;
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -17,8 +15,6 @@ import android.widget.Spinner;
 
 public class DBActivity extends Activity{
 
-    public static final int _DBVersion = 1; //<-- 版本
-    public static final String _DBName="Database.db";
     View.OnClickListener listener_add = null;
     View.OnClickListener listener_update = null;
     View.OnClickListener listener_delete = null;
@@ -38,20 +34,7 @@ public class DBActivity extends Activity{
     DBConnection helper;
     public int id_this;
     public int id_this2;
-    public interface VocSchema {
-        String TABLE_NAME = "Voc";          //Table Name
-        String ID = "_id";                    //ID
-        String CONTENT = "content";       //CONTENT
-        String COUNT = "count";           //COUNT
-    }
-
-    public interface RelationSchema {
-        String TABLE_NAME = "Relation";          //Table Name
-        String ID = "_id";                    //ID
-        String ID1 = "id1";       //ID1
-        String ID2 = "id2";           //ID2
-        String COUNT = "count";       //COUNT
-    }
+    
 
     @Override
     protected void onCreate(final Bundle savedInstanceState){
@@ -69,20 +52,20 @@ public class DBActivity extends Activity{
         helper = new DBConnection(this);
         final SQLiteDatabase db = helper.getWritableDatabase();
         final String[] FROM_VOC =
-                {
-                        VocSchema.ID,
-                        VocSchema.CONTENT,
-                        VocSchema.COUNT
-                };
+        {
+            DBConnection.VocSchema.ID,
+            DBConnection.VocSchema.CONTENT,
+            DBConnection.VocSchema.COUNT
+        };
         final String[] FROM_RELATION =
-                {
-                        RelationSchema.ID,
-                        RelationSchema.ID1,
-                        RelationSchema.ID2,
-                        RelationSchema.COUNT
-                };
+        {
+            DBConnection.RelationSchema.ID,
+            DBConnection.RelationSchema.ID1,
+            DBConnection.RelationSchema.ID2,
+            DBConnection.RelationSchema.COUNT
+        };
 
-        Cursor c = db.query(VocSchema.TABLE_NAME, new String[] {VocSchema.CONTENT}, null, null, null, null, null);
+        Cursor c = db.query(DBConnection.VocSchema.TABLE_NAME, new String[] {DBConnection.VocSchema.CONTENT}, null, null, null, null, null);
         c.moveToFirst();
         CharSequence[] list = new CharSequence[c.getCount()];
         for (int i = 0; i < list.length; i++) {
@@ -91,7 +74,7 @@ public class DBActivity extends Activity{
         }
         c.close();
 
-        Cursor c2 = db.query(RelationSchema.TABLE_NAME, new String[] {RelationSchema.ID}, null, null, null, null, null);
+        Cursor c2 = db.query(DBConnection.RelationSchema.TABLE_NAME, new String[] {DBConnection.RelationSchema.ID}, null, null, null, null, null);
         c2.moveToFirst();
         CharSequence[] list2 = new CharSequence[c2.getCount()];
         for (int i = 0; i < list2.length; i++) {
@@ -152,11 +135,11 @@ public class DBActivity extends Activity{
         listener_add = new View.OnClickListener() {
             public void onClick(View v) {
                 ContentValues values = new ContentValues();
-                values.put(VocSchema.ID, mEditText01.getText().toString());
-                values.put(VocSchema.CONTENT, mEditText02.getText().toString());
-                values.put(VocSchema.COUNT, mEditText03.getText().toString());
+                values.put(DBConnection.VocSchema.ID, mEditText01.getText().toString());
+                values.put(DBConnection.VocSchema.CONTENT, mEditText02.getText().toString());
+                values.put(DBConnection.VocSchema.COUNT, mEditText03.getText().toString());
                 SQLiteDatabase db = helper.getWritableDatabase();
-                db.insert(VocSchema.TABLE_NAME, null, values);
+                db.insert(DBConnection.VocSchema.TABLE_NAME, null, values);
                 db.close();
                 onCreate(savedInstanceState);
             }
@@ -165,12 +148,12 @@ public class DBActivity extends Activity{
         listener_update = new View.OnClickListener() {
             public void onClick(View v) {
                 ContentValues values = new ContentValues();
-                values.put(VocSchema.ID, mEditText01.getText().toString());
-                values.put(VocSchema.CONTENT, mEditText02.getText().toString());
-                values.put(VocSchema.COUNT, mEditText03.getText().toString());
-                String where = VocSchema.ID + " = " + id_this;
+                values.put(DBConnection.VocSchema.ID, mEditText01.getText().toString());
+                values.put(DBConnection.VocSchema.CONTENT, mEditText02.getText().toString());
+                values.put(DBConnection.VocSchema.COUNT, mEditText03.getText().toString());
+                String where = DBConnection.VocSchema.ID + " = " + id_this;
                 SQLiteDatabase db = helper.getWritableDatabase();
-                db.update(VocSchema.TABLE_NAME, values, where ,null);
+                db.update(DBConnection.VocSchema.TABLE_NAME, values, where ,null);
                 db.close();
                 onCreate(savedInstanceState);
             }
@@ -178,9 +161,9 @@ public class DBActivity extends Activity{
         //
         listener_delete = new View.OnClickListener() {
             public void onClick(View v) {
-                String where = VocSchema.ID + " = " + id_this;
+                String where = DBConnection.VocSchema.ID + " = " + id_this;
                 SQLiteDatabase db = helper.getWritableDatabase();
-                db.delete(VocSchema.TABLE_NAME, where ,null);
+                db.delete(DBConnection.VocSchema.TABLE_NAME, where ,null);
                 db.close();
                 onCreate(savedInstanceState);
             }
@@ -197,12 +180,12 @@ public class DBActivity extends Activity{
         listener_add2 = new View.OnClickListener() {
             public void onClick(View v) {
                 ContentValues values = new ContentValues();
-                values.put(RelationSchema.ID, mEditText11.getText().toString());
-                values.put(RelationSchema.ID1, mEditText12.getText().toString());
-                values.put(RelationSchema.ID2, mEditText13.getText().toString());
-                values.put(RelationSchema.COUNT, mEditText14.getText().toString());
+                values.put(DBConnection.RelationSchema.ID, mEditText11.getText().toString());
+                values.put(DBConnection.RelationSchema.ID1, mEditText12.getText().toString());
+                values.put(DBConnection.RelationSchema.ID2, mEditText13.getText().toString());
+                values.put(DBConnection.RelationSchema.COUNT, mEditText14.getText().toString());
                 SQLiteDatabase db = helper.getWritableDatabase();
-                db.insert(RelationSchema.TABLE_NAME, null, values);
+                db.insert(DBConnection.RelationSchema.TABLE_NAME, null, values);
                 db.close();
                 onCreate(savedInstanceState);
             }
@@ -211,13 +194,13 @@ public class DBActivity extends Activity{
         listener_update2 = new View.OnClickListener() {
             public void onClick(View v) {
                 ContentValues values = new ContentValues();
-                values.put(RelationSchema.ID, mEditText11.getText().toString());
-                values.put(RelationSchema.ID1, mEditText12.getText().toString());
-                values.put(RelationSchema.ID2, mEditText13.getText().toString());
-                values.put(RelationSchema.COUNT, mEditText14.getText().toString());
-                String where = RelationSchema.ID + " = " + id_this2;
+                values.put(DBConnection.RelationSchema.ID, mEditText11.getText().toString());
+                values.put(DBConnection.RelationSchema.ID1, mEditText12.getText().toString());
+                values.put(DBConnection.RelationSchema.ID2, mEditText13.getText().toString());
+                values.put(DBConnection.RelationSchema.COUNT, mEditText14.getText().toString());
+                String where = DBConnection.RelationSchema.ID + " = " + id_this2;
                 SQLiteDatabase db = helper.getWritableDatabase();
-                db.update(RelationSchema.TABLE_NAME, values, where ,null);
+                db.update(DBConnection.RelationSchema.TABLE_NAME, values, where ,null);
                 db.close();
                 onCreate(savedInstanceState);
             }
@@ -225,9 +208,9 @@ public class DBActivity extends Activity{
         //
         listener_delete2 = new View.OnClickListener() {
             public void onClick(View v) {
-                String where = RelationSchema.ID + " = " + id_this2;
+                String where = DBConnection.RelationSchema.ID + " = " + id_this2;
                 SQLiteDatabase db = helper.getWritableDatabase();
-                db.delete(RelationSchema.TABLE_NAME, where ,null);
+                db.delete(DBConnection.RelationSchema.TABLE_NAME, where ,null);
                 db.close();
                 onCreate(savedInstanceState);
             }
@@ -261,29 +244,5 @@ public class DBActivity extends Activity{
         button_clear2.setOnClickListener(listener_clear2);
     }
 
-    public static class DBConnection extends SQLiteOpenHelper {
-        private DBConnection(Context ctx) {
-            super(ctx, _DBName,null, _DBVersion);
-        }
-        public void onCreate(SQLiteDatabase db) {
-
-            String sql = "CREATE TABLE " + VocSchema.TABLE_NAME + " ("
-                    + VocSchema.ID  + " INTEGER primary key autoincrement, "
-                    + VocSchema.CONTENT + " text unique not null, "
-                    + VocSchema.COUNT + " INTEGER not null" + ");";
-            //Log.i("haiyang:createDB=", sql);
-            db.execSQL(sql);
-
-            String sql2 = "CREATE TABLE " + RelationSchema.TABLE_NAME + " ("
-                    + RelationSchema.ID  + " INTEGER primary key autoincrement, "
-                    + RelationSchema.ID1 + " INTEGER not null, "
-                    + RelationSchema.ID2 + " INTEGER not null, "
-                    + RelationSchema.COUNT + " INTEGER not null" + ");";
-            //Log.i("haiyang:createDB=", sql);
-            db.execSQL(sql2);
-        }
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            // TODO Auto-generated method stub
-        }
-    }
+    
 }

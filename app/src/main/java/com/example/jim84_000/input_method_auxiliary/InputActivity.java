@@ -56,38 +56,11 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     SQLiteDatabase db;
     int DBSIZE;
 
-    public static final int _DBVersion = 1; //<-- 版本
-    public static final String _DBName="Database.db";
+
     DBConnection helper= new DBConnection(this);
     public int id_this;
     public int id_this2;
-    public interface VocSchema {
-        String TABLE_NAME = "Voc";          //Table Name
-        String ID = "_id";                    //ID
-        String CONTENT = "content";       //CONTENT
-        String COUNT = "count";           //COUNT
-    }
-
-    public interface RelationSchema {
-        String TABLE_NAME = "Relation";          //Table Name
-        String ID = "_id";                    //ID
-        String ID1 = "id1";       //ID1
-        String ID2 = "id2";           //ID2
-        String COUNT = "count";       //COUNT
-    }
-    public final String[] FROM_VOC =
-            {
-                    VocSchema.ID,
-                    VocSchema.CONTENT,
-                    VocSchema.COUNT
-            };
-    public final String[] FROM_RELATION =
-            {
-                    RelationSchema.ID,
-                    RelationSchema.ID1,
-                    RelationSchema.ID2,
-                    RelationSchema.COUNT
-            };
+    
 
     private TextToSpeech mTts;
     private boolean tw=true;
@@ -95,7 +68,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
 
     private void LoadData(){
         SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor c=db.rawQuery("SELECT * FROM "+VocSchema.TABLE_NAME+" ORDER BY "+VocSchema.COUNT+" DESC;",null);
+        Cursor c=db.rawQuery("SELECT * FROM "+DBConnection.VocSchema.TABLE_NAME+" ORDER BY "+DBConnection.VocSchema.COUNT+" DESC;",null);
         int size=c.getCount();
         if(size>0)
         {
@@ -106,9 +79,9 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
 
             for(int i=0;i<size;i++)
             {
-                int id=Integer.parseInt(c.getString(c.getColumnIndex(DBActivity.VocSchema.ID)));
+                int id=Integer.parseInt(c.getString(c.getColumnIndex(DBConnection.VocSchema.ID)));
                 map[id]=i;
-                datas[i]=new InputData(c.getString(c.getColumnIndex(DBActivity.VocSchema.CONTENT)),id);
+                datas[i]=new InputData(c.getString(c.getColumnIndex(DBConnection.VocSchema.CONTENT)),id);
 
                 c.moveToNext();
             }
@@ -273,24 +246,24 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                     System.out.println("check_voc_ifexist:" + tem_word);
                     //Cursor c = db.query("Voc", FROM_VOC, "content='" + storewordspilt[j] + "'", null, null, null, null);
 
-                    Cursor c = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + tem_word + "'", null);
+                    Cursor c = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + tem_word + "'", null);
                     c.moveToFirst();
                     String id_thist = c.getString(0);
                     String content_this = c.getString(1);
                     int count_this = c.getInt(2);
                     c.close();
                     count_this++;
-                    values.put(VocSchema.ID, id_thist);
-                    values.put(VocSchema.CONTENT, content_this);
-                    values.put(VocSchema.COUNT, String.valueOf(count_this));
-                    String where = VocSchema.ID+ " = " + id_thist;
-                    db.update(VocSchema.TABLE_NAME, values, where, null);
+                    values.put(DBConnection.VocSchema.ID, id_thist);
+                    values.put(DBConnection.VocSchema.CONTENT, content_this);
+                    values.put(DBConnection.VocSchema.COUNT, String.valueOf(count_this));
+                    String where = DBConnection.VocSchema.ID+ " = " + id_thist;
+                    db.update(DBConnection.VocSchema.TABLE_NAME, values, where, null);
                 }
                 else{
-                    values.put(VocSchema.ID, String.valueOf(i++));
-                    values.put(VocSchema.CONTENT, tem_word);
-                    values.put(VocSchema.COUNT, String.valueOf(1));
-                    db.insert(VocSchema.TABLE_NAME, null, values);
+                    values.put(DBConnection.VocSchema.ID, String.valueOf(i++));
+                    values.put(DBConnection.VocSchema.CONTENT, tem_word);
+                    values.put(DBConnection.VocSchema.COUNT, String.valueOf(1));
+                    db.insert(DBConnection.VocSchema.TABLE_NAME, null, values);
                 }
                 db.close();
             }
@@ -308,16 +281,16 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                 if(check_vocrelation_ifexist(storewordspilt[j],tem_secondword)){
                     System.out.println("check_vocrelation_ifexist:" + storewordspilt[j] + tem_secondword);
                     //Cursor c = db.query("Voc", FROM_VOC, "content='" + storewordspilt[j] + "'", null, null, null, null);
-                    Cursor c1 = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + storewordspilt[j] + "'", null);
+                    Cursor c1 = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + storewordspilt[j] + "'", null);
                     c1.moveToFirst();
                     String id_c1= c1.getString(0);
                     c1.close();
-                    Cursor c2 = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + tem_secondword + "'", null);
+                    Cursor c2 = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + tem_secondword + "'", null);
                     c2.moveToFirst();
                     String id_c2= c2.getString(0);
                     c2.close();
 
-                    Cursor c = db.rawQuery("select * from " + RelationSchema.TABLE_NAME + " where id1='" + id_c1 + "'and " + "id2='" + id_c2 + "'", null);
+                    Cursor c = db.rawQuery("select * from " + DBConnection.RelationSchema.TABLE_NAME + " where id1='" + id_c1 + "'and " + "id2='" + id_c2 + "'", null);
                     c.moveToFirst();
                     String id_thist = c.getString(0);
                     String id1_this = c.getString(1);
@@ -325,29 +298,29 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                     int count_this = c.getInt(3);
                     c.close();
                     count_this++;
-                    values.put(RelationSchema.ID, id_thist);
-                    values.put(RelationSchema.ID1, id1_this);
-                    values.put(RelationSchema.ID2, id2_this);
-                    values.put(RelationSchema.COUNT, String.valueOf(count_this));
-                    String where = RelationSchema.ID+ " = " + id_thist;
-                    db.update(RelationSchema.TABLE_NAME, values, where, null);
+                    values.put(DBConnection.RelationSchema.ID, id_thist);
+                    values.put(DBConnection.RelationSchema.ID1, id1_this);
+                    values.put(DBConnection.RelationSchema.ID2, id2_this);
+                    values.put(DBConnection.RelationSchema.COUNT, String.valueOf(count_this));
+                    String where = DBConnection.RelationSchema.ID+ " = " + id_thist;
+                    db.update(DBConnection.RelationSchema.TABLE_NAME, values, where, null);
                 }
                 else{
                     System.out.println("check_vocrelation_ifnotexist:" + storewordspilt[j] + tem_secondword);
-                    Cursor c1 = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + storewordspilt[j] + "'", null);
+                    Cursor c1 = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + storewordspilt[j] + "'", null);
                     c1.moveToFirst();
                     String id_c1= c1.getString(0);
                     c1.close();
-                    Cursor c2 = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + tem_secondword + "'", null);
+                    Cursor c2 = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + tem_secondword + "'", null);
                     c2.moveToFirst();
                     String id_c2= c2.getString(0);
                     c2.close();
 
-                    values.put(RelationSchema.ID, String.valueOf(m++));
-                    values.put(RelationSchema.ID1, String.valueOf(id_c1));
-                    values.put(RelationSchema.ID2, String.valueOf(id_c2));
-                    values.put(RelationSchema.COUNT, String.valueOf(1));
-                    db.insert(RelationSchema.TABLE_NAME, null, values);
+                    values.put(DBConnection.RelationSchema.ID, String.valueOf(m++));
+                    values.put(DBConnection.RelationSchema.ID1, String.valueOf(id_c1));
+                    values.put(DBConnection.RelationSchema.ID2, String.valueOf(id_c2));
+                    values.put(DBConnection.RelationSchema.COUNT, String.valueOf(1));
+                    db.insert(DBConnection.RelationSchema.TABLE_NAME, null, values);
                 }
                 db.close();
             }
@@ -487,35 +460,11 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             return "";
     }
 
-    public static class DBConnection extends SQLiteOpenHelper {
-        private DBConnection(Context ctx) {
-            super(ctx, _DBName,null, _DBVersion);
-        }
-        public void onCreate(SQLiteDatabase db) {
-
-            String sql = "CREATE TABLE " + VocSchema.TABLE_NAME + " ("
-                    + VocSchema.ID  + " INTEGER primary key autoincrement, "
-                    + VocSchema.CONTENT + " text unique not null, "
-                    + VocSchema.COUNT + " INTEGER not null" + ");";
-            //Log.i("haiyang:createDB=", sql);
-            db.execSQL(sql);
-
-            String sql2 = "CREATE TABLE " + RelationSchema.TABLE_NAME + " ("
-                    + RelationSchema.ID  + " INTEGER primary key autoincrement, "
-                    + RelationSchema.ID1 + " INTEGER not null, "
-                    + RelationSchema.ID2 + " INTEGER not null, "
-                    + RelationSchema.COUNT + " INTEGER not null" + ");";
-            //Log.i("haiyang:createDB=", sql);
-            db.execSQL(sql2);
-        }
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            // TODO Auto-generated method stub
-        }
-    }
+    
 
     public boolean check_id_ifexist(int tid){
         SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor mCount = db.rawQuery("select count(*) from " + VocSchema.TABLE_NAME + " where _id='" + tid + "'", null);
+        Cursor mCount = db.rawQuery("select count(*) from " + DBConnection.VocSchema.TABLE_NAME + " where _id='" + tid + "'", null);
         mCount.moveToFirst();
         int count= mCount.getInt(0);
         mCount.close();
@@ -527,7 +476,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     }
     public boolean check_idrelation_ifexist(int tid){
         SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor mCount = db.rawQuery("select count(*) from " + RelationSchema.TABLE_NAME + " where _id='" + tid + "'", null);
+        Cursor mCount = db.rawQuery("select count(*) from " + DBConnection.RelationSchema.TABLE_NAME + " where _id='" + tid + "'", null);
         mCount.moveToFirst();
         int count= mCount.getInt(0);
         mCount.close();
@@ -539,7 +488,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     }
     public boolean check_voc_ifexist(String _content){
         SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor mCount = db.rawQuery("select count(*) from " + VocSchema.TABLE_NAME + " where content='" + _content + "'", null);
+        Cursor mCount = db.rawQuery("select count(*) from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + _content + "'", null);
         mCount.moveToFirst();
         int count= mCount.getInt(0);
         mCount.close();
@@ -551,15 +500,15 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     }
     public boolean check_vocrelation_ifexist(String _content,String _content2){
         SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor c1 = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + _content + "'", null);
+        Cursor c1 = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + _content + "'", null);
         c1.moveToFirst();
         int id_c1= c1.getInt(0);
         c1.close();
-        Cursor c2 = db.rawQuery("select * from " + VocSchema.TABLE_NAME + " where content='" + _content2 + "'", null);
+        Cursor c2 = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + _content2 + "'", null);
         c2.moveToFirst();
         int id_c2= c2.getInt(0);
         c2.close();
-        Cursor mcount = db.rawQuery("select count(*) from " + RelationSchema.TABLE_NAME + " where id1='" + id_c1 + "' and " + "id2='" + id_c2 + "'", null);
+        Cursor mcount = db.rawQuery("select count(*) from " + DBConnection.RelationSchema.TABLE_NAME + " where id1='" + id_c1 + "' and " + "id2='" + id_c2 + "'", null);
         mcount.moveToFirst();
         int count=mcount.getInt(0);
         mcount.close();
