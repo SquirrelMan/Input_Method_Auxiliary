@@ -51,7 +51,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     private String [] storewordspilt=new String[256];
     private int pointer_storewordspilt=0;
 
-    InputData[] datas;
+    InputData[] datas,currentDatas=new InputData[9];
     int[] map;
     SQLiteDatabase db;
     int DBSIZE;
@@ -101,7 +101,25 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             Data[i/18][i%18]=new InputData(tmp[i/18][i%18]);*/
     }
 
-
+    private void setCurrentDatas(InputData[] a,int size)
+    {
+        for(int i=0;i<9;i++)
+        {
+            if(offset+i<size)
+            {
+                currentDatas[i].text=a[i+offset].text;
+                currentDatas[i].id=a[i+offset].id;
+            }
+            else
+            {
+                currentDatas[i].id=0;
+                currentDatas[i].text="";
+            }
+        }
+        offset+=9;
+        if(offset > size)
+            offset=0;
+    }
 
     @Override
     protected void onCreate(final Bundle savedInstanceState){
@@ -167,6 +185,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         }
         System.out.println(Data.length*Data[2].length);
 
+        setCurrentDatas(datas, DBSIZE);
         setBtnText();
 
         for(int i=0;i<9;i++){
@@ -177,8 +196,9 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                     String s=editText.getText().toString() + btn[arg].getText().toString();
                     editText.setText(s);
                     editText.setSelection(s.length());
-                    level=(level+1)%3;
-                    offset=0;
+                    //level=(level+1)%3;
+                    //offset=0;
+                    setCurrentDatas(datas,DBSIZE);
                     setBtnText();
                 }
             });
@@ -196,23 +216,23 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             public void onClick(View v) {
                 level = 0;
                 offset = 0;
+                setCurrentDatas(datas,DBSIZE);
                 setBtnText();
             }
         });
-
-        mTts = new TextToSpeech(this,this); //TextToSpeech.OnInitListener
     }
 
     private void next_page(){
-        level=(level+offset/9)%3;
-        offset=((offset+9)%2)*9;
+        //level=(level+offset/9)%3;
+        //offset=((offset+9)%2)*9;
+        setCurrentDatas(datas,DBSIZE);
         setBtnText();
     }
 
     private void setBtnText()
     {
         for(int i=0;i<9;i++){
-            btn[i].setText(Data[level][i+offset].text);
+            btn[i].setText(currentDatas[i].text);
         }
     }
 
