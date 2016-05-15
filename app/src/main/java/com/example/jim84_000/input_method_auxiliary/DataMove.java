@@ -2,10 +2,8 @@ package com.example.jim84_000.input_method_auxiliary;
 
 import android.app.Activity;
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -228,14 +226,25 @@ public class DataMove extends Activity {
                 while(check_id_ifexist(i)){
                     i++;
                 }
-                for(int j = 0 ; j < pointer_storewordspilt ; j++){
+                int m=1;
+                while(check_idrelation_ifexist(m)){
+                    m++;
+                }
+                for(int j = 0 ; j < pointer_storewordspilt+1 ; j++){
                     ContentValues values = new ContentValues();
                     SQLiteDatabase db = helper.getWritableDatabase();
-                    if(check_voc_ifexist(storewordspilt[j])){
-                        System.out.println("check_voc_ifexist:" + storewordspilt[j]);
+                    String tem_word;
+                    if(j == pointer_storewordspilt){
+                        tem_word="#";
+                    }
+                    else{
+                        tem_word=storewordspilt[j];
+                    }
+                    if(check_voc_ifexist(tem_word)){
+                        System.out.println("check_voc_ifexist:" + tem_word);
                         //Cursor c = db.query("Voc", FROM_VOC, "content='" + storewordspilt[j] + "'", null, null, null, null);
 
-                        Cursor c = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + storewordspilt[j] + "'", null);
+                        Cursor c = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + tem_word + "'", null);
                         c.moveToFirst();
                         String id_thist = c.getString(0);
                         String content_this = c.getString(1);
@@ -250,9 +259,66 @@ public class DataMove extends Activity {
                     }
                     else{
                         values.put(DBConnection.VocSchema.ID, String.valueOf(i++));
-                        values.put(DBConnection.VocSchema.CONTENT, storewordspilt[j]);
+                        values.put(DBConnection.VocSchema.CONTENT, tem_word);
                         values.put(DBConnection.VocSchema.COUNT, String.valueOf(1));
                         db.insert(DBConnection.VocSchema.TABLE_NAME, null, values);
+                    }
+                    db.close();
+                }
+                for(int j = 0 ; j < pointer_storewordspilt ; j++){
+                    ContentValues values = new ContentValues();
+                    SQLiteDatabase db = helper.getWritableDatabase();
+                    String tem_secondword;
+                    if(j == pointer_storewordspilt-1){
+                        tem_secondword="#";
+                    }
+                    else{
+                        tem_secondword=storewordspilt[j+1];
+                    }
+
+                    if(check_vocrelation_ifexist(storewordspilt[j], tem_secondword)){
+                        System.out.println("check_vocrelation_ifexist:" + storewordspilt[j] + tem_secondword);
+                        //Cursor c = db.query("Voc", FROM_VOC, "content='" + storewordspilt[j] + "'", null, null, null, null);
+                        Cursor c1 = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + storewordspilt[j] + "'", null);
+                        c1.moveToFirst();
+                        String id_c1= c1.getString(0);
+                        c1.close();
+                        Cursor c2 = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + tem_secondword + "'", null);
+                        c2.moveToFirst();
+                        String id_c2= c2.getString(0);
+                        c2.close();
+
+                        Cursor c = db.rawQuery("select * from " + DBConnection.RelationSchema.TABLE_NAME + " where id1='" + id_c1 + "'and " + "id2='" + id_c2 + "'", null);
+                        c.moveToFirst();
+                        String id_thist = c.getString(0);
+                        String id1_this = c.getString(1);
+                        String id2_this = c.getString(2);
+                        int count_this = c.getInt(3);
+                        c.close();
+                        count_this++;
+                        values.put(DBConnection.RelationSchema.ID, id_thist);
+                        values.put(DBConnection.RelationSchema.ID1, id1_this);
+                        values.put(DBConnection.RelationSchema.ID2, id2_this);
+                        values.put(DBConnection.RelationSchema.COUNT, String.valueOf(count_this));
+                        String where = DBConnection.RelationSchema.ID+ " = " + id_thist;
+                        db.update(DBConnection.RelationSchema.TABLE_NAME, values, where, null);
+                    }
+                    else{
+                        System.out.println("check_vocrelation_ifnotexist:" + storewordspilt[j] + tem_secondword);
+                        Cursor c1 = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + storewordspilt[j] + "'", null);
+                        c1.moveToFirst();
+                        String id_c1= c1.getString(0);
+                        c1.close();
+                        Cursor c2 = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + tem_secondword + "'", null);
+                        c2.moveToFirst();
+                        String id_c2= c2.getString(0);
+                        c2.close();
+
+                        values.put(DBConnection.RelationSchema.ID, String.valueOf(m++));
+                        values.put(DBConnection.RelationSchema.ID1, String.valueOf(id_c1));
+                        values.put(DBConnection.RelationSchema.ID2, String.valueOf(id_c2));
+                        values.put(DBConnection.RelationSchema.COUNT, String.valueOf(1));
+                        db.insert(DBConnection.RelationSchema.TABLE_NAME, null, values);
                     }
                     db.close();
                 }
@@ -325,6 +391,18 @@ public class DataMove extends Activity {
         else
             return false;
     }
+    public boolean check_idrelation_ifexist(int tid){
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor mCount = db.rawQuery("select count(*) from " + DBConnection.RelationSchema.TABLE_NAME + " where _id='" + tid + "'", null);
+        mCount.moveToFirst();
+        int count= mCount.getInt(0);
+        mCount.close();
+        System.out.println("Relation_id_Count:"+String.valueOf(count));
+        if(count >= 1)
+            return true;
+        else
+            return false;
+    }
     public boolean check_voc_ifexist(String _content){
         SQLiteDatabase db = helper.getWritableDatabase();
         Cursor mCount = db.rawQuery("select count(*) from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + _content + "'", null);
@@ -332,6 +410,26 @@ public class DataMove extends Activity {
         int count= mCount.getInt(0);
         mCount.close();
         System.out.println("voc_Count:"+String.valueOf(count));
+        if(count >= 1)
+            return true;
+        else
+            return false;
+    }
+    public boolean check_vocrelation_ifexist(String _content,String _content2){
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor c1 = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + _content + "'", null);
+        c1.moveToFirst();
+        int id_c1= c1.getInt(0);
+        c1.close();
+        Cursor c2 = db.rawQuery("select * from " + DBConnection.VocSchema.TABLE_NAME + " where content='" + _content2 + "'", null);
+        c2.moveToFirst();
+        int id_c2= c2.getInt(0);
+        c2.close();
+        Cursor mcount = db.rawQuery("select count(*) from " + DBConnection.RelationSchema.TABLE_NAME + " where id1='" + id_c1 + "' and " + "id2='" + id_c2 + "'", null);
+        mcount.moveToFirst();
+        int count=mcount.getInt(0);
+        mcount.close();
+        System.out.println("vocrelation_Count:"+String.valueOf(count));
         if(count >= 1)
             return true;
         else
