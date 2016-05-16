@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
@@ -11,6 +13,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.bluetooth.BluetoothAdapter;
+import com.neurosky.thinkgear.*;
+
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -49,6 +54,11 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     private TextToSpeech mTts;
     private static final String TAG = InputActivity.class.getName();
 
+    TGDevice tgDevice;
+    BluetoothAdapter btAdapter;
+    boolean flag=false;//使button一鍵二用
+    final boolean rawEnabled = false;
+
     //=====================================oncreate===================================================
     @Override
     protected void onCreate(final Bundle savedInstanceState){
@@ -80,6 +90,35 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         editText=(EditText)findViewById(R.id.editText);
         tv_status=(TextView)findViewById(R.id.sender_status);
         tv_status.setText("");
+
+        btAdapter = BluetoothAdapter.getDefaultAdapter();//取用系統藍芽
+        if (btAdapter != null) {
+            Toast.makeText(this,"BT Adapter is supported.",Toast.LENGTH_SHORT).show();
+        }
+        else{
+            Toast.makeText(this,"BT Adapter is NULL.",Toast.LENGTH_LONG).show();
+            btn_mwm.setEnabled(false);
+        }
+        btn_mwm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!flag){
+                    tgDevice = new TGDevice(btAdapter, handler);//相當於建socket及設定處理message的事件
+                    try {
+                        doStuff(v);
+                    }
+                    catch (Exception e)
+                    {
+                        tv_status.setText(e.getMessage());
+                    }
+                }
+                else {
+                    tgDevice.close();
+                    tv_status.setText("Disonnected.");
+                    flag=false;
+                }
+            }
+        });
 
         btn_clear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -277,6 +316,10 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     {
         for(int i=0;i<9;i++){
             btn[i].setText(currentDatas[i].text);
+            if(currentDatas[i].text.equals(""))
+                btn[i].setEnabled(false);
+            else
+                btn[i].setEnabled(true);
         }
     }
 
@@ -370,4 +413,68 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         mTts.speak(hello, TextToSpeech.QUEUE_FLUSH, null);
     }
     //===============================================================================================
+
+    //背景處理所收到的message
+    private final Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            //判斷message的type
+            switch (msg.what) {
+                //處理連線的message
+                case TGDevice.MSG_STATE_CHANGE:
+                    switch (msg.arg1) {
+                        case TGDevice.STATE_IDLE:
+                            break;
+                        case TGDevice.STATE_CONNECTING:
+                            tv_status.setText("Connecting...");
+                            break;
+                        case TGDevice.STATE_CONNECTED:
+                            flag=true;
+                            tv_status.setText("Connected.");
+                            tgDevice.start();
+                            break;
+                        case TGDevice.STATE_DISCONNECTED:
+                            break;
+                        case TGDevice.STATE_NOT_FOUND:
+                            tv_status.setText("Can't find");
+                            break;
+                        case TGDevice.STATE_NOT_PAIRED:
+                            tv_status.setText("not paired");
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+
+                //專注度
+                case TGDevice.MSG_ATTENTION:
+
+                    break;
+                //放鬆度
+                case TGDevice.MSG_MEDITATION:
+
+                    break;
+                //眨眼強度
+                case TGDevice.MSG_BLINK:
+                    if(msg.arg1>60)
+                        setCurrentDatas(current_id);
+                    break;
+                //未知
+                case TGDevice.MSG_RAW_COUNT:
+                    //tv.append("Raw Count: " + msg.arg1 + "\n");
+                    break;
+                //電力不足
+                case TGDevice.MSG_LOW_BATTERY:
+                    Toast.makeText(getApplicationContext(), "Low battery!", Toast.LENGTH_SHORT).show();
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+    //建連線
+    public void doStuff(View view) {
+        if(tgDevice.getState() != TGDevice.STATE_CONNECTING && tgDevice.getState() != TGDevice.STATE_CONNECTED)
+            tgDevice.connect(rawEnabled);
+    }
 }
