@@ -1,20 +1,11 @@
 package com.example.jim84_000.input_method_auxiliary;
 
 import android.app.Activity;
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-
-import com.chenlb.mmseg4j.ComplexSeg;
-import com.chenlb.mmseg4j.Dictionary;
-import com.chenlb.mmseg4j.MMSeg;
-import com.chenlb.mmseg4j.Seg;
-import com.chenlb.mmseg4j.Word;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,12 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringReader;
 
-/**
- * Created by jim84_000 on 2016/5/14.
- */
 public class DataMove extends Activity {
     public static final int _DBVersion = 1; //<-- 版本
     public static final String _DBName="Database.db";

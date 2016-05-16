@@ -1,11 +1,8 @@
 package com.example.jim84_000.input_method_auxiliary;
 
 import android.app.Activity;
-import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -15,16 +12,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.chenlb.mmseg4j.ComplexSeg;
-import com.chenlb.mmseg4j.Dictionary;
-import com.chenlb.mmseg4j.MMSeg;
-import com.chenlb.mmseg4j.Seg;
-import com.chenlb.mmseg4j.Word;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -107,7 +96,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         btn_speech.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(status_speech==false) {
+                if(status_speech) {
                     status_speech = true;
                     Toast.makeText(getApplicationContext(), "開啟語音", Toast.LENGTH_SHORT).show();
                 }
@@ -119,6 +108,14 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         });
         mTts = new TextToSpeech(this,this); //TextToSpeech.OnInitListener
 
+        btn_load.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                datas=null; //RELEASE
+                next_id=null; //RELEASE
+                LoadData();
+            }
+        });
         try{
             LoadData();
         }catch (Exception e){
@@ -219,7 +216,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     }
 
     //===============================================================================================
-    private void setCurrentDatas(int id)
+    private void setCurrentDatas(int id) //OR NEXT PAGE
     {
         int size=next_id[id].length;
         if(size==0)
@@ -281,7 +278,6 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         //要傳送的字串
         String message = editText.getText().toString();
         spilt.spilt(message);
-        System.out.println("JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ");
         if(!con)
             sayHello(message);
         else {
