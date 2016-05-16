@@ -55,6 +55,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     int[][] next_id;
     int current_id=0;//0 denote main level
     int offset=0; // offset=9n
+    String sentence="";
 
     DBConnection helper= new DBConnection(this);
     public int id_this;
@@ -119,12 +120,30 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             current_id =id= 0;
             size=next_id[0].length;
         }
-        for(int i=0;i<9;i++)
+        else if(size==1)
+        {
+            int position=map[next_id[id][0]];
+            String str=datas[position].text;
+            if(str.equals("#"))
+            {
+                sentence+="#";
+                offset = 0;
+                current_id =id= 0;
+                size=next_id[0].length;
+            }
+        }
+        for(int i=0;i<9;)
         {
             if(offset+i<size)
             {
                 int position=map[next_id[id][i+offset]];
-                currentDatas[i].text=datas[position].text;
+                String str=datas[position].text;
+                if(str.equals("#"))
+                {
+                    offset+=1;
+                    continue;
+                }
+                currentDatas[i].text=str;
                 currentDatas[i].id=datas[position].id;
             }
             else
@@ -132,6 +151,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                 currentDatas[i].id=0;
                 currentDatas[i].text="";
             }
+            i++;
         }
         offset+=9;
         if(offset > size) {
@@ -218,6 +238,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                     String s=editText.getText().toString() + btn[arg].getText().toString();
                     editText.setText(s);
                     editText.setSelection(s.length());
+                    sentence+=btn[arg].getText().toString();
                     offset=0;
                     current_id=currentDatas[arg].id;
                     setCurrentDatas(current_id);
