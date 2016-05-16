@@ -55,7 +55,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     int[][] next_id;
     int current_id=0;//0 denote main level
     int offset=0; // offset=9n
-    String sentence="";
+    String sentence1="";
 
     DBConnection helper= new DBConnection(this);
     public int id_this;
@@ -126,7 +126,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             String str=datas[position].text;
             if(str.equals("#"))
             {
-                sentence+="#";
+                sentence1+="#";
                 offset = 0;
                 current_id =id= 0;
                 size=next_id[0].length;
@@ -238,7 +238,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                     String s=editText.getText().toString() + btn[arg].getText().toString();
                     editText.setText(s);
                     editText.setSelection(s.length());
-                    sentence+=btn[arg].getText().toString();
+                    sentence1+=btn[arg].getText().toString();
                     offset=0;
                     current_id=currentDatas[arg].id;
                     setCurrentDatas(current_id);
