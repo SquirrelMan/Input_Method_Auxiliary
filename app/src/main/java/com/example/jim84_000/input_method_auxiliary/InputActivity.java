@@ -285,7 +285,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         tv_status.setText("");
         //要傳送的字串
         String message = editText.getText().toString();
-        spilt.spilt(message);
+        spilt.spilt(sentence1);
         if(!con)
             sayHello(message);
         else {
