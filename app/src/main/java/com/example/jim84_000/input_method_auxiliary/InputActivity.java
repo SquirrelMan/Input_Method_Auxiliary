@@ -72,7 +72,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         int size=c.getCount();
         if(size>0)
         {
-            String query1,query2;
+            String query1;
             c.moveToFirst();
             datas=new InputData[size];
             map=new int[size+1];
@@ -87,10 +87,8 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                 datas[i]=new InputData(c.getString(c.getColumnIndex(DBConnection.VocSchema.CONTENT)),id);
                 //================================================================================================================
                 query1="select "+DBConnection.RelationSchema.ID2+" from "+DBConnection.RelationSchema.TABLE_NAME
-                        +" where "+DBConnection.RelationSchema.ID1+" = '"+String.valueOf(id)+"'";
-                query2="select "+DBConnection.VocSchema.ID+" from "+DBConnection.VocSchema.TABLE_NAME
-                        +" where "+DBConnection.VocSchema.ID+" in ( "+query1+" ) order by "+DBConnection.VocSchema.COUNT+" desc;";
-                Cursor c2=db.rawQuery(query2,null);
+                        +" where "+DBConnection.RelationSchema.ID1+" = '"+String.valueOf(id)+"' order by "+DBConnection.RelationSchema.COUNT+" desc;";
+                Cursor c2=db.rawQuery(query1,null);
                 int size2=c2.getCount();
                 next_id[id]=new int[size2];
                 if(size2>0)
