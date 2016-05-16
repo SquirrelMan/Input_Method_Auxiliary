@@ -122,9 +122,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             System.out.println(e.toString());
         }
 
-
         setCurrentDatas(current_id);
-        //setBtnText();
 
         for(int i=0;i<9;i++){
             final int arg = i;
@@ -138,7 +136,6 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                     offset=0;
                     current_id=currentDatas[arg].id;
                     setCurrentDatas(current_id);
-                    //setBtnText();
                 }
             });
 
@@ -156,7 +153,6 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                 current_id = 0;
                 offset = 0;
                 setCurrentDatas(current_id);
-                //setBtnText();
             }
         });
     }
@@ -172,13 +168,13 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     //===============================================================================================
 
     private void LoadData(){
-        SQLiteDatabase db = helper.getWritableDatabase();
+        long stime=System.currentTimeMillis();
+        SQLiteDatabase db = helper.getReadableDatabase();
         //db=SQLiteDatabase.openDatabase("/sdcard/DB/Database.db",null,SQLiteDatabase.OPEN_READWRITE);
         Cursor c=db.rawQuery("SELECT * FROM "+DBConnection.VocSchema.TABLE_NAME+" ORDER BY "+DBConnection.VocSchema.COUNT+" DESC;",null);
         int size=c.getCount();
         if(size>0)
         {
-            String query1;
             c.moveToFirst();
             datas=new InputData[size];
             map=new int[size+1];
@@ -187,28 +183,40 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
 
             for(int i=0;i<size;i++)
             {
-                int id=Integer.parseInt(c.getString(c.getColumnIndex(DBConnection.VocSchema.ID)));
+                final int id=Integer.parseInt(c.getString(c.getColumnIndex(DBConnection.VocSchema.ID)));
                 next_id[0][i]=id;
                 map[id]=i;
                 datas[i]=new InputData(c.getString(c.getColumnIndex(DBConnection.VocSchema.CONTENT)),id);
-                //================================================================================================================
-                query1="select "+DBConnection.RelationSchema.ID2+" from "+DBConnection.RelationSchema.TABLE_NAME
-                        +" where "+DBConnection.RelationSchema.ID1+" = '"+String.valueOf(id)+"' order by "+DBConnection.RelationSchema.COUNT+" desc;";
-                Cursor c2=db.rawQuery(query1,null);
-                int size2=c2.getCount();
-                next_id[id]=new int[size2];
-                if(size2>0)
-                {
-                    c2.moveToFirst();
-                    for(int j=0;j<size2;j++)
-                    {
-                        next_id[id][j]=Integer.parseInt(c2.getString(0));
-                        c2.moveToNext();
+                //==============================
+                //LoadRelation(id);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        LoadRelation(id);
                     }
-                }
-                c2.close();
-                //================================================================================================================
-
+                }).start();
+                //==============================
+                c.moveToNext();
+            }
+        }
+        c.close();
+       long avg=(System.currentTimeMillis()-stime);
+        Toast.makeText(this,"載入時間 : "+String.valueOf(avg)+" msec",Toast.LENGTH_SHORT).show();
+    }
+    
+    private void LoadRelation(int id){
+        SQLiteDatabase db=helper.getReadableDatabase();
+        String query1="select "+DBConnection.RelationSchema.ID2+" from "+DBConnection.RelationSchema.TABLE_NAME
+                +" where "+DBConnection.RelationSchema.ID1+" = '"+String.valueOf(id)+"' order by "+DBConnection.RelationSchema.COUNT+" desc;";
+        Cursor c=db.rawQuery(query1,null);
+        int size=c.getCount();
+        next_id[id]=new int[size];
+        if(size>0)
+        {
+            c.moveToFirst();
+            for(int i=0;i<size;i++)
+            {
+                next_id[id][i]=Integer.parseInt(c.getString(0));
                 c.moveToNext();
             }
         }
@@ -297,7 +305,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             InetAddress serverAddr = null;
             SocketAddress sc_add = null;            //設定Server IP位置
             serverAddr = InetAddress.getByName(IP_SERVER);
-            //設定port:8898
+            //設定port
             sc_add= new InetSocketAddress(serverAddr,PORT);
 
             socket = new Socket();
