@@ -18,7 +18,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 public class DataMove extends Activity {
-    public static final int _DBVersion = 1; //<-- 版本
     public static final String _DBName="Database.db";
     public static final String _LDName="LearnData.data";
     View.OnClickListener listener_moveintoout = null;
@@ -38,7 +37,7 @@ public class DataMove extends Activity {
     private static final String TAG = DataMove.class.getName();
 
     DBConnection helper= new DBConnection(this);
-    Spilt spilt=new Spilt(this,helper);
+    Learn learn=new Learn(this,helper);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -201,8 +200,7 @@ public class DataMove extends Activity {
             String aBuffer = "";
             while ((aDataRow = myReader.readLine()) != null) {
                 aBuffer += aDataRow + "\n";
-                //run(aDataRow);//<===================================================================
-                spilt.spilt(aDataRow);
+                learn.Learning(aDataRow);
             }
             ret=aBuffer;
             myReader.close();

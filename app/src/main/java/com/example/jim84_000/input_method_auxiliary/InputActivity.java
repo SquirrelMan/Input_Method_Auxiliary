@@ -49,7 +49,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     String sentence1="";
 
     DBConnection helper= new DBConnection(this);
-    Spilt spilt=new Spilt(this,helper);
+    Learn learn=new Learn(this,helper);
 
     private TextToSpeech mTts;
     private static final String TAG = InputActivity.class.getName();
@@ -69,7 +69,6 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             ThreadPolicy policy = new ThreadPolicy.Builder().permitAll().build();
             setThreadPolicy(policy);
         }
-
         btn_send=(Button)findViewById(R.id.btn_send);
         btn_next=(Button)findViewById(R.id.btn_next);
         btn_lv1=(Button)findViewById(R.id.btn_lv1);
@@ -85,7 +84,11 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             currentDatas[i]=new InputData();
         }
 
-        if(!con) btn_send.setText("SPEAK");
+        if(!con) {
+            btn_send.setText("SPEAK");
+            btn_speech.setVisibility(View.GONE);
+        }
+        status_speech=!con;
 
         editText=(EditText)findViewById(R.id.editText);
         tv_status=(TextView)findViewById(R.id.sender_status);
@@ -136,13 +139,12 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             @Override
             public void onClick(View v) {
                 if(status_speech) {
-                    status_speech = true;
                     Toast.makeText(getApplicationContext(), "開啟語音", Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    status_speech = false;
                     Toast.makeText(getApplicationContext(), "關閉語音", Toast.LENGTH_SHORT).show();
                 }
+                status_speech=!status_speech;
             }
         });
         mTts = new TextToSpeech(this,this); //TextToSpeech.OnInitListener
@@ -278,7 +280,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             String str=datas[position].text;
             if(str.equals("#"))
             {
-                sentence1+="#";
+                //sentence1+="#";
                 offset = 0;
                 current_id =id= 0;
                 size=next_id[0].length;
@@ -314,13 +316,19 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     }
     private void setBtnText()
     {
+        int count=0;
         for(int i=0;i<9;i++){
             btn[i].setText(currentDatas[i].text);
             if(currentDatas[i].text.equals(""))
+            {
                 btn[i].setEnabled(false);
+                count++;
+            }
             else
-                btn[i].setEnabled(true);
+            btn[i].setEnabled(true);
         }
+        if(count==9)
+            setCurrentDatas(current_id);
     }
 
     private void send(){
@@ -328,10 +336,16 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         tv_status.setText("");
         //要傳送的字串
         String message = editText.getText().toString();
-        spilt.spilt(sentence1);
-        if(!con)
+        final String thread_msg=message;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                learn.Learning(thread_msg);
+            }
+        }).start();
+        if(status_speech)
             sayHello(message);
-        else {
+        if(con) {
             try {
                 //傳送資料
                 out.writeUTF(message);
