@@ -23,6 +23,10 @@ public class DBActivity extends Activity{
     View.OnClickListener listener_update2 = null;
     View.OnClickListener listener_delete2 = null;
     View.OnClickListener listener_clear2 = null;
+    View.OnClickListener listener_add3 = null;
+    View.OnClickListener listener_update3 = null;
+    View.OnClickListener listener_delete3 = null;
+    View.OnClickListener listener_clear3 = null;
     Button button_add;
     Button button_update;
     Button button_delete;
@@ -31,9 +35,14 @@ public class DBActivity extends Activity{
     Button button_update2;
     Button button_delete2;
     Button button_clear2;
+    Button button_add3;
+    Button button_update3;
+    Button button_delete3;
+    Button button_clear3;
     DBConnection helper;
     public int id_this;
     public int id_this2;
+    public int id_this3;
     
 
     @Override
@@ -48,6 +57,10 @@ public class DBActivity extends Activity{
         final EditText mEditText12 = (EditText)findViewById(R.id.EditText12);
         final EditText mEditText13 = (EditText)findViewById(R.id.EditText13);
         final EditText mEditText14 = (EditText)findViewById(R.id.EditText14);
+
+        final EditText mEditText21 = (EditText)findViewById(R.id.EditText21);
+        final EditText mEditText22 = (EditText)findViewById(R.id.EditText22);
+        final EditText mEditText23 = (EditText)findViewById(R.id.EditText23);
         //
         helper = new DBConnection(this);
         final SQLiteDatabase db = helper.getWritableDatabase();
@@ -63,6 +76,12 @@ public class DBActivity extends Activity{
             DBConnection.RelationSchema.ID1,
             DBConnection.RelationSchema.ID2,
             DBConnection.RelationSchema.COUNT
+        };
+        final String[] FROM_SENTENCE =
+        {
+            DBConnection.SentenceSchema.ID,
+            DBConnection.SentenceSchema.CONTENT,
+            DBConnection.SentenceSchema.COUNT
         };
 
         Cursor c = db.query(DBConnection.VocSchema.TABLE_NAME, new String[] {DBConnection.VocSchema.CONTENT}, null, null, null, null, null);
@@ -82,6 +101,15 @@ public class DBActivity extends Activity{
             c2.moveToNext();
         }
         c2.close();
+
+        Cursor c3 = db.query(DBConnection.SentenceSchema.TABLE_NAME, new String[] {DBConnection.SentenceSchema.CONTENT}, null, null, null, null, null);
+        c3.moveToFirst();
+        CharSequence[] list3 = new CharSequence[c3.getCount()];
+        for (int i = 0; i < list3.length; i++) {
+            list3[i] = c3.getString(0);
+            c3.moveToNext();
+        }
+        c3.close();
 
         //
         Spinner spinner = (Spinner)findViewById(R.id.Spinner01);
@@ -125,6 +153,28 @@ public class DBActivity extends Activity{
                 mEditText12.setText(id1_this);
                 mEditText13.setText(id2_this);
                 mEditText14.setText(count_this);
+            }
+
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        Spinner spinner3 = (Spinner)findViewById(R.id.Spinner21);
+        spinner3.setAdapter(new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_item, list3));
+        //
+        spinner3.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String content = ((Spinner) parent).getSelectedItem().toString();
+                Cursor c = db.query("Sentence", FROM_SENTENCE, "content='" + content + "'", null, null, null, null);
+                c.moveToFirst();
+                id_this3 = Integer.parseInt(c.getString(0));
+                String id_thist = c.getString(0);
+                String content_this = c.getString(1);
+                String count_this = c.getString(2);
+                c.close();
+                mEditText21.setText(id_thist);
+                mEditText22.setText(content_this);
+                mEditText23.setText(count_this);
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
@@ -224,6 +274,52 @@ public class DBActivity extends Activity{
                 mEditText14.setText("");
             }
         };
+
+        //
+        listener_add3 = new View.OnClickListener() {
+            public void onClick(View v) {
+                ContentValues values = new ContentValues();
+                values.put(DBConnection.SentenceSchema.ID, mEditText21.getText().toString());
+                values.put(DBConnection.SentenceSchema.CONTENT, mEditText22.getText().toString());
+                values.put(DBConnection.SentenceSchema.COUNT, mEditText23.getText().toString());
+                SQLiteDatabase db = helper.getWritableDatabase();
+                db.insert(DBConnection.SentenceSchema.TABLE_NAME, null, values);
+                db.close();
+                onCreate(savedInstanceState);
+            }
+        };
+        //
+        listener_update3 = new View.OnClickListener() {
+            public void onClick(View v) {
+                ContentValues values = new ContentValues();
+                values.put(DBConnection.SentenceSchema.ID, mEditText21.getText().toString());
+                values.put(DBConnection.SentenceSchema.CONTENT, mEditText22.getText().toString());
+                values.put(DBConnection.SentenceSchema.COUNT, mEditText23.getText().toString());
+                String where = DBConnection.SentenceSchema.ID + " = " + id_this3;
+                SQLiteDatabase db = helper.getWritableDatabase();
+                db.update(DBConnection.SentenceSchema.TABLE_NAME, values, where, null);
+                db.close();
+                onCreate(savedInstanceState);
+            }
+        };
+        //
+        listener_delete3 = new View.OnClickListener() {
+            public void onClick(View v) {
+                String where = DBConnection.SentenceSchema.ID + " = " + id_this3;
+                SQLiteDatabase db = helper.getWritableDatabase();
+                db.delete(DBConnection.SentenceSchema.TABLE_NAME, where, null);
+                db.close();
+                onCreate(savedInstanceState);
+            }
+        };
+        //
+        listener_clear3 = new View.OnClickListener() {
+            public void onClick(View v) {
+                mEditText21.setText("");
+                mEditText22.setText("");
+                mEditText23.setText("");
+            }
+        };
         //
         button_add = (Button)findViewById(R.id.Button01);
         button_add.setOnClickListener(listener_add);
@@ -242,6 +338,15 @@ public class DBActivity extends Activity{
         button_delete2.setOnClickListener(listener_delete2);
         button_clear2 = (Button)findViewById(R.id.Button14);
         button_clear2.setOnClickListener(listener_clear2);
+
+        button_add3 = (Button)findViewById(R.id.Button21);
+        button_add3.setOnClickListener(listener_add3);
+        button_update3 = (Button)findViewById(R.id.Button22);
+        button_update3.setOnClickListener(listener_update3);
+        button_delete3 = (Button)findViewById(R.id.Button23);
+        button_delete3.setOnClickListener(listener_delete3);
+        button_clear3 = (Button)findViewById(R.id.Button24);
+        button_clear3.setOnClickListener(listener_clear3);
     }
 
     
