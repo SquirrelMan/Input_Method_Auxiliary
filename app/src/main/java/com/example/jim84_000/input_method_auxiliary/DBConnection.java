@@ -26,6 +26,12 @@ public class DBConnection extends SQLiteOpenHelper {
         String ID2 = "id2";           //ID2
         String COUNT = "count";       //COUNT
     }
+    public interface SentenceSchema {
+        String TABLE_NAME = "Sentence";          //Table Name
+        String ID = "_id";                    //ID
+        String CONTENT = "content";       //CONTENT
+        String COUNT = "count";       //COUNT
+    }
     public DBConnection(Context ctx) {
         super(ctx, _DBName,null, _DBVersion);
     }
@@ -46,6 +52,13 @@ public class DBConnection extends SQLiteOpenHelper {
                 + "constraint candidate_key unique (" + RelationSchema.ID1 + "," + RelationSchema.ID2 + ") " + ");";
         //Log.i("haiyang:createDB=", sql);
         db.execSQL(sql2);
+
+        String sql3 = "CREATE TABLE " + SentenceSchema.TABLE_NAME + " ("
+                + SentenceSchema.ID  + " INTEGER primary key autoincrement, "
+                + SentenceSchema.CONTENT + " text unique not null, "
+                + SentenceSchema.COUNT + " INTEGER not null" + ");";
+        //Log.i("haiyang:createDB=", sql);
+        db.execSQL(sql3);
     }
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // TODO Auto-generated method stub

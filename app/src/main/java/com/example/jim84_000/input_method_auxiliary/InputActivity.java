@@ -2,9 +2,9 @@ package com.example.jim84_000.input_method_auxiliary;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,17 +12,15 @@ import android.os.Message;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.bluetooth.BluetoothAdapter;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.neurosky.thinkgear.*;
-
+import com.neurosky.thinkgear.TGDevice;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -69,6 +67,10 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     private Handler uihandler = new Handler();
     private ProgressDialog progressDialog = null;
     long avg=0;
+
+    CharSequence[] list = new CharSequence[11];
+    Spinner spinner;
+    Button btn_sentence;
 
     //=====================================oncreate===================================================
     @Override
@@ -197,6 +199,28 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                 current_id = 0;
                 offset = 0;
                 setCurrentDatas(current_id);
+            }
+        });
+
+        btn_sentence=(Button)findViewById(R.id.Button_sentence);
+        spinner=(Spinner)findViewById(R.id.Spinner_sentence);
+        btn_sentence.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sentence();
+                spinner.setAdapter(new ArrayAdapter<CharSequence>(InputActivity.this, android.R.layout.simple_spinner_item, list));
+                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        String _content = ((Spinner) parent).getSelectedItem().toString();
+                        //editText.postInvalidate();
+                        if(_content.length()>0)
+                            editText.setText(_content);
+                    }
+
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
             }
         });
     }
@@ -508,5 +532,48 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     @Override
     public void onStop() {
         super.onStop();
+    }
+    public boolean check_idsentence_ifexist(int tid){
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor mCount = db.rawQuery("select count(*) from " + DBConnection.SentenceSchema.TABLE_NAME + " where _id='" + tid + "'", null);
+        mCount.moveToFirst();
+        int count= mCount.getInt(0);
+        mCount.close();
+        System.out.println("Sentence_id_Count:" + String.valueOf(count));
+        if(count >= 1)
+            return true;
+        else
+            return false;
+    }
+    public boolean check_sentence_ifexist(String _content){
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor c1 = db.rawQuery("select count(*) from " + DBConnection.SentenceSchema.TABLE_NAME + " where content='" + _content + "'", null);
+        c1.moveToFirst();
+        int count=c1.getInt(0);
+        c1.close();
+        System.out.println("sentence_Count:" + String.valueOf(count));
+        if(count >= 1)
+            return true;
+        else
+            return false;
+    }
+    private void sentence () {
+        String message = editText.getText().toString();
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor c = db.rawQuery("select content from " + DBConnection.SentenceSchema.TABLE_NAME + " where content LIKE '%" + message + "%'  ORDER BY " + DBConnection.SentenceSchema.COUNT + " desc;", null);
+        c.moveToFirst();
+        int SIZE = c.getCount();
+        for (int i = 0; i < 11; i++) {
+            if (i >= SIZE) {
+                list[i] = "";
+            } else if (i == 0) {
+                list[i] = message;
+            } else {
+                list[i] = c.getString(0);
+                c.moveToNext();
+            }
+        }
+        c.close();
+        db.close();
     }
 }

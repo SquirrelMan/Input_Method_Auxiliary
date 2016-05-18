@@ -38,6 +38,39 @@ public class Learn {
             String msg=SpiltString(message,helper.getReadableDatabase());
             System.out.println(msg);
 
+            int k=1;
+            while(check_idsentence_ifexist(k)){
+                k++;
+            }
+            SQLiteDatabase db2 = helper.getWritableDatabase();
+            if(check_sentence_ifexist(message)){
+                System.out.println("check_sentence_ifexist:" + message);
+                //Cursor c = db.query("Voc", FROM_VOC, "content='" + storewordspilt[j] + "'", null, null, null, null);
+
+                Cursor c = db2.rawQuery("select * from " + DBConnection.SentenceSchema.TABLE_NAME + " where content='" + message + "'", null);
+                c.moveToFirst();
+                String id_thist = c.getString(0);
+                String content_this = c.getString(1);
+                int count_this = c.getInt(2);
+                c.close();
+                count_this++;
+                ContentValues values = new ContentValues();
+                values.put(DBConnection.SentenceSchema.ID, id_thist);
+                values.put(DBConnection.SentenceSchema.CONTENT, content_this);
+                values.put(DBConnection.SentenceSchema.COUNT, String.valueOf(count_this));
+                String where = DBConnection.SentenceSchema.ID+ " = " + id_thist;
+                db2.update(DBConnection.SentenceSchema.TABLE_NAME, values, where, null);
+            }
+            else{
+                ContentValues values = new ContentValues();
+                values.put(DBConnection.SentenceSchema.ID, String.valueOf(k++));
+                values.put(DBConnection.SentenceSchema.CONTENT, message);
+                values.put(DBConnection.SentenceSchema.COUNT, String.valueOf(1));
+                db2.insert(DBConnection.SentenceSchema.TABLE_NAME, null, values);
+            }
+            db2.close();
+
+
             for(int j = 0 ; j < pointer_storewordspilt+1 ; j++){
 
                 SQLiteDatabase db = helper.getWritableDatabase();
@@ -165,5 +198,30 @@ public class Learn {
         }
         else
             return "";
+    }
+
+    public boolean check_idsentence_ifexist(int tid){
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor mCount = db.rawQuery("select count(*) from " + DBConnection.SentenceSchema.TABLE_NAME + " where _id='" + tid + "'", null);
+        mCount.moveToFirst();
+        int count= mCount.getInt(0);
+        mCount.close();
+        System.out.println("Sentence_id_Count:"+String.valueOf(count));
+        if(count >= 1)
+            return true;
+        else
+            return false;
+    }
+    public boolean check_sentence_ifexist(String _content){
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor c1 = db.rawQuery("select count(*) from " + DBConnection.SentenceSchema.TABLE_NAME + " where content='" + _content + "'", null);
+        c1.moveToFirst();
+        int count=c1.getInt(0);
+        c1.close();
+        System.out.println("sentence_Count:" + String.valueOf(count));
+        if(count >= 1)
+            return true;
+        else
+            return false;
     }
 }
