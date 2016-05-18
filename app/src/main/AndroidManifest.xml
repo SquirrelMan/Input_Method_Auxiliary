@@ -52,6 +52,10 @@
             android:name=".DataMove"
             android:configChanges="orientation|keyboardHidden"
             android:theme="@android:style/Theme.NoTitleBar" />
+        <activity
+            android:name=".SpeechMode"
+            android:configChanges="orientation|keyboardHidden"
+            android:theme="@android:style/Theme.NoTitleBar" />
         <!-- Used for transferring files  after a successful connection -->
 
     </application>
