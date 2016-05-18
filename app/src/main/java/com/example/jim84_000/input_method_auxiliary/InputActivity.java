@@ -171,10 +171,12 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             btn[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String s = editText.getText().toString() + btn[arg].getText().toString();
+                    String s = editText.getText().toString();
+                    int index=editText.getSelectionStart();
+                    String part1=spilt(s,0,index),part2=spilt(s,index,s.length());
+                    s=part1+btn[arg].getText().toString()+part2;
                     editText.setText(s);
-                    editText.setSelection(s.length());
-                    sentence1 += btn[arg].getText().toString();
+                    editText.setSelection(part1.length()+btn[arg].getText().toString().length());
                     offset = 0;
                     current_id = currentDatas[arg].id;
                     setCurrentDatas(current_id);
@@ -199,7 +201,13 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         });
     }
     //===============================================================================================
-
+    String spilt(String s,int start,int end)
+    {
+        String tmp="";
+        for(int i=start;i<end;i++)
+            tmp+=String.valueOf(s.charAt(i));
+        return tmp;
+    }
     //===================================onstart======================================================
     @Override
     protected void onStart() {
