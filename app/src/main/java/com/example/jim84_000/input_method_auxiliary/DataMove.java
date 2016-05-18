@@ -6,6 +6,8 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -47,6 +49,7 @@ public class DataMove extends Activity {
         listener_moveintoout = new View.OnClickListener() {
             public void onClick(View v) {
                 moveFile(Path_in,_DBName,Path_out);
+                Toast.makeText(DataMove.this,"Success",Toast.LENGTH_SHORT).show();
             }
         };
         //
@@ -54,12 +57,14 @@ public class DataMove extends Activity {
             public void onClick(View v) {
                 //System.out.println(Path_in);
                 copyFile(Path_in, _DBName, Path_out);
+                Toast.makeText(DataMove.this,"Success",Toast.LENGTH_SHORT).show();
             }
         };
 
         listener_moveouttoin = new View.OnClickListener() {
             public void onClick(View v) {
                 moveFile(Path_out, _DBName, Path_in);
+                Toast.makeText(DataMove.this,"Success",Toast.LENGTH_SHORT).show();
             }
         };
         //
@@ -67,17 +72,20 @@ public class DataMove extends Activity {
             public void onClick(View v) {
                 //System.out.println(Path_in);
                 copyFile(Path_out, _DBName, Path_in);
+                Toast.makeText(DataMove.this,"Success",Toast.LENGTH_SHORT).show();
             }
         };
         //
         listener_deletein = new View.OnClickListener() {
             public void onClick(View v) {
                 deleteFile(Path_in, _DBName);
+                Toast.makeText(DataMove.this,"Success",Toast.LENGTH_SHORT).show();
             }
         };
         listener_learndata = new View.OnClickListener() {
             public void onClick(View v) {
                 readFromFile();
+                Toast.makeText(DataMove.this,"Success",Toast.LENGTH_SHORT).show();
             }
         };
 
