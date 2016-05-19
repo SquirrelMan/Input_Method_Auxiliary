@@ -43,6 +43,7 @@
         <activity
             android:name=".InputActivity"
             android:configChanges="orientation|keyboardHidden"
+            android:windowSoftInputMode="stateAlwaysHidden"
             android:theme="@android:style/Theme.NoTitleBar" />
         <activity
             android:name=".DisplayActivity"
