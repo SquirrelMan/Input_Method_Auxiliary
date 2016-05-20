@@ -35,67 +35,34 @@ public class Learn {
     //=======================================學習===============================================
     public void Learning(String message){
         try {
-            String msg=SpiltString(message,helper.getReadableDatabase());
+            String msg=SpiltString(message, helper.getReadableDatabase());
             System.out.println(msg);
-
-            int k=1;
-            while(check_idsentence_ifexist(k)){
-                k++;
-            }
-            SQLiteDatabase db2 = helper.getWritableDatabase();
-            if(check_sentence_ifexist(message)){
-                System.out.println("check_sentence_ifexist:" + message);
-                //Cursor c = db.query("Voc", FROM_VOC, "content='" + storewordspilt[j] + "'", null, null, null, null);
-
-                Cursor c = db2.rawQuery("select * from " + DBConnection.SentenceSchema.TABLE_NAME + " where content='" + message + "'", null);
-                c.moveToFirst();
-                String id_thist = c.getString(0);
-                String content_this = c.getString(1);
-                int count_this = c.getInt(2);
-                c.close();
-                count_this++;
-                ContentValues values = new ContentValues();
-                values.put(DBConnection.SentenceSchema.ID, id_thist);
-                values.put(DBConnection.SentenceSchema.CONTENT, content_this);
-                values.put(DBConnection.SentenceSchema.COUNT, String.valueOf(count_this));
-                String where = DBConnection.SentenceSchema.ID+ " = " + id_thist;
-                db2.update(DBConnection.SentenceSchema.TABLE_NAME, values, where, null);
-            }
-            else{
-                ContentValues values = new ContentValues();
-                values.put(DBConnection.SentenceSchema.ID, String.valueOf(k++));
-                values.put(DBConnection.SentenceSchema.CONTENT, message);
-                values.put(DBConnection.SentenceSchema.COUNT, String.valueOf(1));
-                db2.insert(DBConnection.SentenceSchema.TABLE_NAME, null, values);
-            }
-            db2.close();
-
-
-            for(int j = 0 ; j < pointer_storewordspilt+1 ; j++){
-
-                SQLiteDatabase db = helper.getWritableDatabase();
-                String tem_word=((j==pointer_storewordspilt)?"#":storewordspilt[j]);
-
+            SQLiteDatabase db = helper.getWritableDatabase();
+            //handle vocabulary
+            for(int i = 0 ; i < pointer_storewordspilt+1 ; i++){
+                String tem_word=((i==pointer_storewordspilt)?"#":storewordspilt[i]);
                 System.out.println(tem_word);
-                if(!helper.update(tem_word,db)){
-                    helper.insert(tem_word,db);
+                if(!helper.update(true,tem_word,db)){
+                    helper.insert(true,tem_word,db);
                 }
-                db.close();
             }
-
-            for(int j = 0 ; j < pointer_storewordspilt ; j++){
-                SQLiteDatabase db = helper.getWritableDatabase();
-                String tem_secondword=((j==pointer_storewordspilt-1)?"#":storewordspilt[j+1]);
-                int id1=helper.getVocID(storewordspilt[j],db);
+            //handle relation
+            for(int i = 0 ; i < pointer_storewordspilt ; i++){
+                String tem_secondword=((i==pointer_storewordspilt-1)?"#":storewordspilt[i+1]);
+                int id1=helper.getVocID(storewordspilt[i],db);
                 int id2=helper.getVocID(tem_secondword,db);
-
                 System.out.println(tem_secondword);
                 if(!helper.update(id1,id2,db)){
                     helper.insert(id1,id2,db);
                 }
-                db.close();
+
             }
             clear_storeword_spilt();
+            //handle sentence
+            if(!helper.update(false,message,db)){
+                helper.insert(false,message,db);
+            }
+            db.close();
         }
         catch (Exception e){
             Toast.makeText(context, "斷字失敗", Toast.LENGTH_SHORT).show();
@@ -150,6 +117,12 @@ public class Learn {
                 i++;
                 continue;
             }
+
+            else if ((ch>='A' && ch<='Z') || (ch>='a' && ch<='z')){
+                tmp+=String.valueOf(ch);
+                i++;
+                continue;
+            }
             Cursor c = db.rawQuery("SELECT * FROM "+DBConnection.VocSchema.TABLE_NAME+
                     " WHERE "+DBConnection.VocSchema.CONTENT+" = '" + str + "';", null);
             if (c.getCount() > 0) {
@@ -198,30 +171,5 @@ public class Learn {
         }
         else
             return "";
-    }
-
-    public boolean check_idsentence_ifexist(int tid){
-        SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor mCount = db.rawQuery("select count(*) from " + DBConnection.SentenceSchema.TABLE_NAME + " where _id='" + tid + "'", null);
-        mCount.moveToFirst();
-        int count= mCount.getInt(0);
-        mCount.close();
-        System.out.println("Sentence_id_Count:"+String.valueOf(count));
-        if(count >= 1)
-            return true;
-        else
-            return false;
-    }
-    public boolean check_sentence_ifexist(String _content){
-        SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor c1 = db.rawQuery("select count(*) from " + DBConnection.SentenceSchema.TABLE_NAME + " where content='" + _content + "'", null);
-        c1.moveToFirst();
-        int count=c1.getInt(0);
-        c1.close();
-        System.out.println("sentence_Count:" + String.valueOf(count));
-        if(count >= 1)
-            return true;
-        else
-            return false;
     }
 }

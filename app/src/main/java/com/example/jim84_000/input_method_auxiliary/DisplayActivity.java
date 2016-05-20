@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -25,6 +26,13 @@ public class DisplayActivity extends Activity {
     private  Handler handler;
     private ServerSocket serverSocket=null;
     private String line;
+    TextToSpeech.OnInitListener listener=new TextToSpeech.OnInitListener() {
+        @Override
+        public void onInit(int status) {
+
+        }
+    };
+    Speaker speaker;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -33,6 +41,7 @@ public class DisplayActivity extends Activity {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             setThreadPolicy(policy);
         }
+        speaker=new Speaker(this,listener);
         tv=(TextView)findViewById(R.id.textView);
         test=(TextView)findViewById(R.id.textView3);
         tv.setText(str);
@@ -97,7 +106,13 @@ public class DisplayActivity extends Activity {
                         line = in.readUTF();
                         System.out.println(i);
                         handler.post(new Runnable() {
-                            public void run() {tv.setText(line);
+                            public void run() {
+                                if(line.length()>15)
+                                    tv.setTextSize((float)30);
+                                else
+                                    tv.setTextSize(50);
+                                tv.setText(line);
+                                speaker.sayHello(line);
                             }
                         });
                     }while (line!=null);

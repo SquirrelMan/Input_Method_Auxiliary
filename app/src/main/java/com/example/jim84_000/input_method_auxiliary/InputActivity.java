@@ -28,12 +28,11 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.util.Locale;
 
 import static android.os.StrictMode.ThreadPolicy;
 import static android.os.StrictMode.setThreadPolicy;
 
-public class InputActivity extends Activity implements TextToSpeech.OnInitListener {
+public class InputActivity extends Activity {
     public static final String IP_SERVER = "192.168.49.1";
     public static int PORT = 8988;
     private DataOutputStream out; //for transfer
@@ -45,19 +44,23 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     TextView tv_status;
     public static boolean con = false;
 
-    InputData[] datas, currentDatas = new InputData[9];
-    int[] map;
-    SQLiteDatabase db;
-    int[][] next_id;
+    InputData[] datas=new InputData[1], currentDatas = new InputData[9];
+    int[] map=new int[1];
+    //SQLiteDatabase db;
+    int[][] next_id=new int[1][1];
     int current_id = 0;//0 denote main level
     int offset = 0; // offset=9n
-    String sentence1 = "";
 
     DBConnection helper = new DBConnection(this);
     Learn learn = new Learn(this, helper);
 
-    private TextToSpeech mTts;
-    private static final String TAG = InputActivity.class.getName();
+    Speaker speaker ;
+    TextToSpeech.OnInitListener listener=new TextToSpeech.OnInitListener() {
+        @Override
+        public void onInit(int status) {
+
+        }
+    };
 
     TGDevice tgDevice;
     BluetoothAdapter btAdapter;
@@ -66,7 +69,6 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
 
     private Handler uihandler = new Handler();
     private ProgressDialog progressDialog = null;
-    long avg=0;
 
     CharSequence[] list = new CharSequence[11];
     Spinner spinner;
@@ -77,7 +79,6 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client);
-
         if (Build.VERSION.SDK_INT > 9) {
             ThreadPolicy policy = new ThreadPolicy.Builder().permitAll().build();
             setThreadPolicy(policy);
@@ -94,8 +95,10 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         for (int i = 0; i < 9; i++) {
             btn[i] = (Button) findViewById(btnid[i]);
             btn[i].setTextSize(25);//<===========================BTN TEXT SIZE
+            btn[i].setEnabled(false);
             currentDatas[i] = new InputData();
         }
+        datas[0]=new InputData();
 
         if (!con) {
             btn_send.setText("SPEAK");
@@ -154,19 +157,15 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                 status_speech = !status_speech;
             }
         });
-        mTts = new TextToSpeech(this, this); //TextToSpeech.OnInitListener
+
+        speaker = new Speaker(this,listener);//TextToSpeech.OnInitListener
 
         btn_load.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                datas = null; //RELEASE
-                next_id = null; //RELEASE
                 Update();
             }
         });
-
-
-        Update();
 
         for (int i = 0; i < 9; i++) {
             final int arg = i;
@@ -236,6 +235,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     @Override
     protected void onStart() {
         super.onStart();
+        Update();
         if (con)
             ConnectToDisplay();
     }
@@ -243,13 +243,15 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     //===============================================================================================
     private void Update() {
         try {
-            //progressDialog = ProgressDialog.show(InputActivity.this, "請稍後", "載入資料中...");
-            LoadData();
-            Toast.makeText(this,"載入時間 : " + String.valueOf(avg) + " msec", Toast.LENGTH_SHORT).show();
+            progressDialog = ProgressDialog.show(InputActivity.this, "請稍後", "載入資料中...");
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    LoadData(); progressDialog.dismiss();
+                }
+            }).start();
         } catch (Exception e) {
             System.out.println(e.toString());
-        } finally {
-            //progressDialog.dismiss();
         }
     }
 
@@ -261,6 +263,9 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         int size = c.getCount();
         if (size > 0) {
             c.moveToFirst();
+            datas = null; //RELEASE
+            next_id = null; //RELEASE
+            map=null; //RELEASE
             datas = new InputData[size];
             map = new int[size + 1];
             next_id = new int[size + 1][];
@@ -271,7 +276,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                 map[id] = i;
                 datas[i] = new InputData(c.getString(c.getColumnIndex(DBConnection.VocSchema.CONTENT)), id);
                 //==============================
-                //LoadRelation(id);
+                LoadRelation(id);
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -283,11 +288,12 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             }
         }
         c.close();
-        avg = (System.currentTimeMillis() - stime);
+        final long avg = (System.currentTimeMillis() - stime);
         current_id = offset = 0;
         uihandler.post(new Runnable() {
             @Override
             public void run() {
+                Toast.makeText(InputActivity.this,"載入時間 : " + String.valueOf(avg) + " msec", Toast.LENGTH_SHORT).show();
                 setCurrentDatas(current_id);
             }
         });
@@ -324,7 +330,6 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             int position = map[next_id[id][0]];
             String str = datas[position].text;
             if (str.equals("#")) {
-                //sentence1+="#";
                 offset = 0;
                 current_id = id = 0;
                 size = next_id[0].length;
@@ -364,7 +369,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             } else
                 btn[i].setEnabled(true);
         }
-        if (count == 9)
+        if (count == 9 && current_id != 0)
             setCurrentDatas(current_id);
     }
 
@@ -380,7 +385,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             }
         }).start();
         if (status_speech)
-            sayHello(message);
+            speaker.sayHello(message);
         if (con) {
             try {
                 //傳送資料
@@ -395,8 +400,8 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
 
     private void ConnectToDisplay() {
         try {
-            InetAddress serverAddr = null;
-            SocketAddress sc_add = null;            //設定Server IP位置
+            InetAddress serverAddr;
+            SocketAddress sc_add;            //設定Server IP位置
             serverAddr = InetAddress.getByName(IP_SERVER);
             //設定port
             sc_add = new InetSocketAddress(serverAddr, PORT);
@@ -427,11 +432,6 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     protected void onDestroy() {
         super.onDestroy();
         terminate();
-        if (mTts != null) {
-            mTts.stop();
-            mTts.shutdown();
-            status_speech = false;
-        }
     }
 
     @Override
@@ -439,30 +439,6 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         super.onPause();
         terminate();
     }
-
-    //=============================================語音==============================================
-    @Override
-    public void onInit(int status) {
-        // status can be either TextToSpeech.SUCCESS or TextToSpeech.ERROR.
-        if (status == TextToSpeech.SUCCESS) {
-            int result;
-            result = mTts.setLanguage(Locale.TAIWAN);
-            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                // Lanuage data is missing or the language is not supported.
-                Log.e(TAG, "Language is not available.");
-            }
-        } else {
-            // Initialization failed.
-            Log.e(TAG, "Could not initialize TextToSpeech.");
-        }
-    }
-
-    private void sayHello(String hello) {
-        // Select a random hello.
-        // Drop allpending entries in the playback queue.
-        mTts.speak(hello, TextToSpeech.QUEUE_FLUSH, null);
-    }
-    //===============================================================================================
 
     //背景處理所收到的message
     private final Handler handler = new Handler() {
@@ -533,30 +509,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     public void onStop() {
         super.onStop();
     }
-    public boolean check_idsentence_ifexist(int tid){
-        SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor mCount = db.rawQuery("select count(*) from " + DBConnection.SentenceSchema.TABLE_NAME + " where _id='" + tid + "'", null);
-        mCount.moveToFirst();
-        int count= mCount.getInt(0);
-        mCount.close();
-        System.out.println("Sentence_id_Count:" + String.valueOf(count));
-        if(count >= 1)
-            return true;
-        else
-            return false;
-    }
-    public boolean check_sentence_ifexist(String _content){
-        SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor c1 = db.rawQuery("select count(*) from " + DBConnection.SentenceSchema.TABLE_NAME + " where content='" + _content + "'", null);
-        c1.moveToFirst();
-        int count=c1.getInt(0);
-        c1.close();
-        System.out.println("sentence_Count:" + String.valueOf(count));
-        if(count >= 1)
-            return true;
-        else
-            return false;
-    }
+
     private void sentence () {
         String message = editText.getText().toString();
         SQLiteDatabase db = helper.getWritableDatabase();
@@ -576,4 +529,6 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         c.close();
         db.close();
     }
+
+
 }
