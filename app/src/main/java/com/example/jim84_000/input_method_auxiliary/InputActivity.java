@@ -28,15 +28,18 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.Locale;
 
 import static android.os.StrictMode.ThreadPolicy;
 import static android.os.StrictMode.setThreadPolicy;
 
-public class InputActivity extends Activity {
+public class InputActivity extends Activity implements TextToSpeech.OnInitListener {
     public static final String IP_SERVER = "192.168.49.1";
     public static int PORT = 8988;
     private DataOutputStream out; //for transfer
     private Socket socket;
+
+
     Button btn_send, btn_next, btn_lv1, btn_load, btn_clear, btn_mwm, btn_speech;
     boolean status_speech = false;
     Button[] btn = new Button[9];
@@ -53,14 +56,6 @@ public class InputActivity extends Activity {
 
     DBConnection helper = new DBConnection(this);
     Learn learn = new Learn(this, helper);
-
-    Speaker speaker ;
-    TextToSpeech.OnInitListener listener=new TextToSpeech.OnInitListener() {
-        @Override
-        public void onInit(int status) {
-
-        }
-    };
 
     TGDevice tgDevice;
     BluetoothAdapter btAdapter;
@@ -149,16 +144,13 @@ public class InputActivity extends Activity {
         btn_speech.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (status_speech) {
-                    Toast.makeText(getApplicationContext(), "開啟語音", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), "關閉語音", Toast.LENGTH_SHORT).show();
-                }
+                String text=(status_speech?"關閉語音":"開啟語音");
+                btn_speech.setText(text);
                 status_speech = !status_speech;
             }
         });
 
-        speaker = new Speaker(this,listener);//TextToSpeech.OnInitListener
+        tw = new TextToSpeech(this,this);
 
         btn_load.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -293,7 +285,7 @@ public class InputActivity extends Activity {
         uihandler.post(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(InputActivity.this,"載入時間 : " + String.valueOf(avg) + " msec", Toast.LENGTH_SHORT).show();
+                Toast.makeText(InputActivity.this, "載入時間 : " + String.valueOf(avg) + " msec", Toast.LENGTH_SHORT).show();
                 setCurrentDatas(current_id);
             }
         });
@@ -384,8 +376,8 @@ public class InputActivity extends Activity {
                 learn.Learning(message);
             }
         }).start();
-        if (status_speech)
-            speaker.sayHello(message);
+        if (status_speech&&message.length()>0)
+            sayHello(message);
         if (con) {
             try {
                 //傳送資料
@@ -411,7 +403,7 @@ public class InputActivity extends Activity {
             socket.connect(sc_add, 2000);
             out = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            Toast.makeText(getApplicationContext(), "傳送失敗", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "連線失敗", Toast.LENGTH_SHORT).show();
             this.finish();
         }
     }
@@ -530,5 +522,52 @@ public class InputActivity extends Activity {
         db.close();
     }
 
+    //=============================================語音==============================================
+    private TextToSpeech tw;
+    private static final String TAG = "SPEAKER";
+    boolean mode=true;
+    // Implements TextToSpeech.OnInitListener.
+    public void onInit(int status) {
+        // status can be either TextToSpeech.SUCCESS or TextToSpeech.ERROR.
+        if (status == TextToSpeech.SUCCESS) {
+            language();
+        }
+
+        else {
+            Log.e(TAG, "Could not initialize TextToSpeech.");
+        }
+    }
+    private void language(){
+        float speed=(float)0.8;
+        int result;
+        if(mode){
+            result = tw.setLanguage(Locale.TAIWAN);//<<<===================================
+            mode=!mode;
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e(TAG, "Language is not available.");
+            }
+            else tw.setSpeechRate(speed);
+        }
+
+        else {
+            result = tw.setLanguage(Locale.US);//<<<===================================
+            mode=!mode;
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e(TAG, "Language is not available.");
+            }
+            else tw.setSpeechRate(speed);
+        }
+
+    }
+
+    public void sayHello(String hello) {
+        // Select a random hello.
+        // Drop allpending entries in the playback queue
+        long start=System.currentTimeMillis();
+        tw.speak(hello, TextToSpeech.QUEUE_FLUSH, null);
+        //en.speak("hello", TextToSpeech.QUEUE_FLUSH, null);
+        long duration=System.currentTimeMillis()- start;
+        System.out.println(duration);
+    }
 
 }

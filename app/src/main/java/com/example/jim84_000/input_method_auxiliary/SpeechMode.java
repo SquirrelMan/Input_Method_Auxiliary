@@ -28,49 +28,21 @@ import java.util.Locale;
 /**
  * Created by jim84_000 on 2016/5/19.
  */
-public class SpeechMode extends ListActivity implements AdapterView.OnItemClickListener , TextToSpeech.OnInitListener {
+public class SpeechMode extends ListActivity implements AdapterView.OnItemClickListener, TextToSpeech.OnInitListener {
 
-    private static final String TAG = "SpeechMode";
     private String parentPath;
-    private TextToSpeech mTts;
     File _CurrentFilePath;
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mTts != null) {
-            mTts.stop();
-            mTts.shutdown();
-        }
-    }
-
-    @Override
-    public void onInit(int status) {
-        // status can be either TextToSpeech.SUCCESS or TextToSpeech.ERROR.
-        if (status == TextToSpeech.SUCCESS) {
-            int result;
-            result = mTts.setLanguage(Locale.TAIWAN);
-            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                // Lanuage data is missing or the language is not supported.
-                Log.e(TAG, "Language is not available.");
-            }
-        } else {
-            // Initialization failed.
-            Log.e(TAG, "Could not initialize TextToSpeech.");
-        }
-    }
-
-    private void sayHello(String hello) {
-        // Select a random hello.
-        // Drop allpending entries in the playback queue.
-        mTts.speak(hello, TextToSpeech.QUEUE_FLUSH, null);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.speech_list);
-        mTts = new TextToSpeech(this, this); //TextToSpeech.OnInitListener
+        tw=new TextToSpeech(this,this);
         this.setListAdapter(this.createListAdapter());
         ListView lv = (ListView) this.findViewById(android.R.id.list);
         lv.setOnItemClickListener(this);
@@ -145,4 +117,52 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
             }
         }
     };
+
+    //=============================================語音==============================================
+    private TextToSpeech tw;
+    private static final String TAG = "SPEAKER";
+    boolean mode=true;
+    // Implements TextToSpeech.OnInitListener.
+    public void onInit(int status) {
+        // status can be either TextToSpeech.SUCCESS or TextToSpeech.ERROR.
+        if (status == TextToSpeech.SUCCESS) {
+            language();
+        }
+
+        else {
+            Log.e(TAG, "Could not initialize TextToSpeech.");
+        }
+    }
+    private void language(){
+        float speed=(float)0.8;
+        int result;
+        if(mode){
+            result = tw.setLanguage(Locale.TAIWAN);//<<<===================================
+            mode=!mode;
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e(TAG, "Language is not available.");
+            }
+            else tw.setSpeechRate(speed);
+        }
+
+        else {
+            result = tw.setLanguage(Locale.US);//<<<===================================
+            mode=!mode;
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e(TAG, "Language is not available.");
+            }
+            else tw.setSpeechRate(speed);
+        }
+
+    }
+
+    public void sayHello(String hello) {
+        // Select a random hello.
+        // Drop allpending entries in the playback queue
+        long start=System.currentTimeMillis();
+        tw.speak(hello, TextToSpeech.QUEUE_FLUSH, null);
+        //en.speak("hello", TextToSpeech.QUEUE_FLUSH, null);
+        long duration=System.currentTimeMillis()- start;
+        System.out.println(duration);
+    }
 }

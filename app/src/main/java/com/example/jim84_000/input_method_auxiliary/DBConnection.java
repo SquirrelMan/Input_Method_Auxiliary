@@ -33,62 +33,55 @@ public class DBConnection extends SQLiteOpenHelper {
         String COUNT = "count";       //COUNT
     }
     public DBConnection(Context ctx) {
-        super(ctx, _DBName,null, _DBVersion);
+        super(ctx, _DBName, null, _DBVersion);
     }
     public void onCreate(SQLiteDatabase db) {
 
-        String sql = "CREATE TABLE " + VocSchema.TABLE_NAME + " ("
-                + VocSchema.ID  + " INTEGER unique primary key autoincrement not null, "
-                + VocSchema.CONTENT + " text unique not null, "
-                + VocSchema.COUNT + " INTEGER not null default 1" + ");";
-        //Log.i("haiyang:createDB=", sql);
-        db.execSQL(sql);
+        try {
+            String sql = "CREATE TABLE " + VocSchema.TABLE_NAME + " ("
+                    + VocSchema.ID  + " INTEGER unique primary key autoincrement not null, "
+                    + VocSchema.CONTENT + " text unique not null, "
+                    + VocSchema.COUNT + " INTEGER not null default 1" + ");";
+            db.execSQL(sql);
 
-        String sql2 = "CREATE TABLE " + RelationSchema.TABLE_NAME + " ("
-                + RelationSchema.ID  + " INTEGER unique primary key autoincrement, "
-                + RelationSchema.ID1 + " INTEGER not null, "
-                + RelationSchema.ID2 + " INTEGER not null, "
-                + RelationSchema.COUNT + " INTEGER not null default 1,"
-                + "constraint candidate_key unique (" + RelationSchema.ID1 + "," + RelationSchema.ID2 + ") " + ");";
-        //Log.i("haiyang:createDB=", sql);
-        db.execSQL(sql2);
+            String sql2 = "CREATE TABLE " + RelationSchema.TABLE_NAME + " ("
+                    + RelationSchema.ID  + " INTEGER unique primary key autoincrement, "
+                    + RelationSchema.ID1 + " INTEGER not null, "
+                    + RelationSchema.ID2 + " INTEGER not null, "
+                    + RelationSchema.COUNT + " INTEGER not null default 1, "
+                    + "foreign key(" + RelationSchema.ID1 + ") references " + VocSchema.TABLE_NAME + "(" + VocSchema.ID + "), "
+                    + "foreign key(" + RelationSchema.ID2 + ") references " + VocSchema.TABLE_NAME + "(" + VocSchema.ID + "), "
+                    + "constraint candidate_key unique (" + RelationSchema.ID1 + "," + RelationSchema.ID2 + ") " + ");";
+            db.execSQL(sql2);
 
-        String sql3 = "CREATE TABLE " + SentenceSchema.TABLE_NAME + " ("
-                + SentenceSchema.ID  + " INTEGER primary key autoincrement, "
-                + SentenceSchema.CONTENT + " text unique not null, "
-                + SentenceSchema.COUNT + " INTEGER not null" + ");";
-        //Log.i("haiyang:createDB=", sql);
-        db.execSQL(sql3);
+            String sql3 = "CREATE TABLE " + SentenceSchema.TABLE_NAME + " ("
+                    + SentenceSchema.ID  + " INTEGER primary key autoincrement, "
+                    + SentenceSchema.CONTENT + " text unique not null, "
+                    + SentenceSchema.COUNT + " INTEGER not null default 1" + ");";
+            db.execSQL(sql3);
+        }catch (Exception e){
+            System.out.println(e.toString());
+        }
     }
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // TODO Auto-generated method stub
     }
 
-    public int insert(String content, SQLiteDatabase db){
-        int newid=0;
-        ContentValues values=new ContentValues();
-        values.put(VocSchema.CONTENT,content);
-        try{
-            newid=(int)db.insert(VocSchema.TABLE_NAME,null,values);
-            System.out.println("Insert SUCCESS VOC1");
-        }catch (Exception e){
-            e.printStackTrace();
-            //System.out.println("Insert Failed VOC1");
-        }
-        return newid;
-    }
+    public int insert(boolean mode,String content, SQLiteDatabase db){
 
-    public int insert(String content,int count, SQLiteDatabase db){
+        String content_name=(mode?VocSchema.CONTENT:SentenceSchema.CONTENT);
+        String table_name=(mode?VocSchema.TABLE_NAME:SentenceSchema.TABLE_NAME);
+        String out=(mode?"VOC":"SENTENCE");
+
         int newid=0;
         ContentValues values=new ContentValues();
-        values.put(VocSchema.CONTENT,content);
-        values.put(VocSchema.COUNT,count);
+        values.put(content_name,content);
         try{
-            newid=(int)db.insert(VocSchema.TABLE_NAME,null,values);
-            System.out.println("Insert SUCCESS VOC2");
+            newid=(int)db.insert(table_name,null,values);
+            System.out.println("Insert SUCCESS "+out);
         }catch (Exception e){
             e.printStackTrace();
-            //System.out.println("Insert Failed VOC2");
+            System.out.println("Insert Failed " + out);
         }
         return newid;
     }
@@ -137,25 +130,32 @@ public class DBConnection extends SQLiteOpenHelper {
         return id;
     }
 
-    public boolean update(String content, SQLiteDatabase db){
+    public boolean update(boolean mode,String content, SQLiteDatabase db){
+
+        String content_name=(mode?VocSchema.CONTENT:SentenceSchema.CONTENT);
+        String count_name=(mode?VocSchema.COUNT:SentenceSchema.COUNT);
+        String table_name=(mode?VocSchema.TABLE_NAME:SentenceSchema.TABLE_NAME);
+        String id_name=(mode?VocSchema.ID:SentenceSchema.ID);
+        String out=(mode?"VOC":"SENTENCE");
+
         boolean ret=false;
-        String query="select * from "+VocSchema.TABLE_NAME+" where "
-                +VocSchema.CONTENT+" = '"+content+"';";
+        String query="select * from "+table_name+" where "
+                +content_name+" = '"+content+"';";
         Cursor c=db.rawQuery(query,null);
         if(c.getCount()>0){
             c.moveToFirst();
-            int id=c.getInt(c.getColumnIndex(VocSchema.ID));
-            int count=c.getInt(c.getColumnIndex(VocSchema.COUNT))+1;
+            int id=c.getInt(c.getColumnIndex(id_name));
+            int count=c.getInt(c.getColumnIndex(count_name))+1;
             ContentValues values=new ContentValues();
             values.put(VocSchema.COUNT,count);
             String where=VocSchema.ID+ " = "+id;
             try {
                 db.update(VocSchema.TABLE_NAME,values,where,null);
                 ret=true;
-                System.out.println("UPDATE SUCCESS VOC1");
+                System.out.println("UPDATE SUCCESS "+out);
             }catch (Exception e){
                 e.printStackTrace();
-                System.out.println("UPDATE FAIL VOC1");
+                System.out.println("UPDATE FAIL "+out);
             }
         }
         c.close();
