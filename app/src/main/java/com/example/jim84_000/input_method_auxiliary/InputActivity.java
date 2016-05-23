@@ -132,7 +132,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         btn_clear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                editText.setText("");
+                clear();
             }
         });
         btn_send.setOnClickListener(new View.OnClickListener() {
@@ -151,6 +151,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         });
 
         tw = new TextToSpeech(this,this);
+        en = new TextToSpeech(this,this);
 
         btn_load.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -204,8 +205,11 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                         String _content = ((Spinner) parent).getSelectedItem().toString();
                         //editText.postInvalidate();
-                        if(_content.length()>0)
+                        if(_content.length()>0){
                             editText.setText(_content);
+                            editText.setSelection(editText.length());
+                        }
+
                     }
 
                     public void onNothingSelected(AdapterView<?> parent) {
@@ -408,6 +412,12 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         }
     }
 
+    private void clear(){
+        editText.setText("");
+        current_id=offset=0;
+        setCurrentDatas(current_id);
+    }
+
     private void terminate() {
         if (con) {
             try {
@@ -423,6 +433,14 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (tw != null) {
+            tw.stop();
+            tw.shutdown();
+        }
+        if (en != null) {
+            en.stop();
+            en.shutdown();
+        }
         terminate();
     }
 
@@ -509,7 +527,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         c.moveToFirst();
         int SIZE = c.getCount();
         for (int i = 0; i < 11; i++) {
-            if (i >= SIZE) {
+            if (i > SIZE) {
                 list[i] = "";
             } else if (i == 0) {
                 list[i] = message;
@@ -523,7 +541,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     }
 
     //=============================================語音==============================================
-    private TextToSpeech tw;
+    private TextToSpeech tw,en;
     private static final String TAG = "SPEAKER";
     boolean mode=true;
     // Implements TextToSpeech.OnInitListener.
@@ -550,24 +568,53 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         }
 
         else {
-            result = tw.setLanguage(Locale.US);//<<<===================================
-            mode=!mode;
+            result = en.setLanguage(Locale.US);//<<<===================================
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e(TAG, "Language is not available.");
             }
-            else tw.setSpeechRate(speed);
+            else en.setSpeechRate(speed);
         }
 
     }
 
     public void sayHello(String hello) {
-        // Select a random hello.
-        // Drop allpending entries in the playback queue
-        long start=System.currentTimeMillis();
-        tw.speak(hello, TextToSpeech.QUEUE_FLUSH, null);
-        //en.speak("hello", TextToSpeech.QUEUE_FLUSH, null);
-        long duration=System.currentTimeMillis()- start;
-        System.out.println(duration);
-    }
+        String[] msg=new String[50];
+        for(int i=0;i<50;i++)
+            msg[i]="";
+        int previous=0,count=0,speaker=0,current;
+        char first=hello.charAt(0);
+        if(first>='a' && first<='z' || first>='A' && first<='Z')
+            speaker=1;
+        for(int i=0;i<hello.length();i++)
+        {
+            current=0;
+            char ch1=hello.charAt(i);
+            if(ch1>='a' && ch1<='z' || ch1>='A' && ch1<='Z')
+                current=1;
+            else if(ch1==' '||ch1==',')
+                current=previous;
 
+            if(current!=previous)
+            {
+                previous=current;
+                count++;
+            }
+            msg[count]+=String.valueOf(ch1);
+        }
+
+        for(int i=0;i<=count;i++)
+        {
+            System.out.println(msg[i]);
+            if(speaker==0){
+                tw.speak(msg[i],TextToSpeech.QUEUE_ADD,null);
+                speaker++;
+                speaker%=2;
+            }
+            else {
+                en.speak(msg[i],TextToSpeech.QUEUE_ADD,null);
+                speaker++;
+                speaker%=2;
+            }
+        }
+    }
 }

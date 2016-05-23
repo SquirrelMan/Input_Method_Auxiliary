@@ -1,8 +1,12 @@
 package com.example.jim84_000.input_method_auxiliary;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -20,8 +24,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 public class DataMove extends Activity {
+    static final String _path=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
     public static final String _DBName="Database.db";
-    public static final String _LDName="LearnData.data";
+    public static String _LDName=_path+"/LearnData.data";
     View.OnClickListener listener_moveintoout = null;
     View.OnClickListener listener_copyintoout = null;
     View.OnClickListener listener_moveouttoin = null;
@@ -40,6 +45,9 @@ public class DataMove extends Activity {
 
     DBConnection helper= new DBConnection(this);
     Learn learn=new Learn(this,helper);
+
+    private Handler uihandler = new Handler();
+    private ProgressDialog progressDialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,8 +92,13 @@ public class DataMove extends Activity {
         };
         listener_learndata = new View.OnClickListener() {
             public void onClick(View v) {
-                readFromFile();
-                Toast.makeText(DataMove.this,"Success",Toast.LENGTH_SHORT).show();
+                /*Intent intent = new Intent(Intent.ACTION_PICK);
+                File mFile = new File(_path);
+                intent.setData(Uri.fromFile(mFile));
+                intent.setType("file:///");
+                Intent Chooser = intent.createChooser(intent, null);
+                startActivityForResult(Chooser, 0);*/
+                learnfromfile();
             }
         };
 
@@ -195,13 +208,13 @@ public class DataMove extends Activity {
 
     }
     //從File讀取data
-    private String readFromFile() {
-        String ret = "";
+    private boolean readFromFile() {
+        boolean success=false;
         try {
             File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             path.mkdir();
             // create the file in which we will write the contents
-            File myFile = new File(path, _LDName);
+            File myFile = new File(_LDName);
             FileInputStream fIn = new FileInputStream(myFile);
             BufferedReader myReader = new BufferedReader(new InputStreamReader(fIn));
             String aDataRow = "";
@@ -210,7 +223,7 @@ public class DataMove extends Activity {
                 aBuffer += aDataRow + "\n";
                 learn.Learning(aDataRow);
             }
-            ret=aBuffer;
+            success=true;
             myReader.close();
         }
         catch (FileNotFoundException e) {
@@ -218,7 +231,60 @@ public class DataMove extends Activity {
         } catch (IOException e) {
             Log.e(TAG, "Can not read file: " + e.toString());
         }
-        return ret;
+        return success;
+    }
+
+    private void learnfromfile(){
+        System.out.println(_LDName);
+        progressDialog = ProgressDialog.show(DataMove.this, "請稍後", "學習中...");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if(readFromFile())
+                    uihandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(DataMove.this,"Success Learn",Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                else
+                    uihandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(DataMove.this, "Fail Learn", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                progressDialog.dismiss();
+            }
+        }).start();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        // TODO Auto-generated method stub
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // 有選擇檔案
+        if ( resultCode == RESULT_OK  && requestCode == 0)
+        {
+            // 取得檔案的 Uri
+            Uri uri = data.getData();
+            if( uri != null )
+            {
+                _LDName=uri.getPath();
+                learnfromfile();
+            }
+            else
+            {
+                setTitle("無效的檔案路徑 !!");
+            }
+        }
+        else
+        {
+            setTitle("取消選擇檔案 !!");
+            learnfromfile();
+        }
     }
 
 }

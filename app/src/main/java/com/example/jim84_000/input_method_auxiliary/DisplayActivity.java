@@ -37,6 +37,7 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
             setThreadPolicy(policy);
         }
         tw=new TextToSpeech(this,this);
+        en=new TextToSpeech(this,this);
         tv=(TextView)findViewById(R.id.textView);
         test=(TextView)findViewById(R.id.textView3);
         tv.setText(str);
@@ -44,6 +45,14 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
     @Override
     protected void onDestroy(){
         super.onDestroy();
+        if (tw != null) {
+            tw.stop();
+            tw.shutdown();
+        }
+        if (en != null) {
+            en.stop();
+            en.shutdown();
+        }
         try {
             serverSocket.close();
         }catch (IOException e){
@@ -112,7 +121,8 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
                                     font=50;
                                 tv.setTextSize(font);
                                 tv.setText(line);
-                                sayHello(line);
+                                if(line.length()>0)
+                                    sayHello(line);
                             }
                         });
                     }while (line!=null);
@@ -137,7 +147,7 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
     };
 
     //=============================================語音==============================================
-    private TextToSpeech tw;
+    private TextToSpeech tw,en;
     private static final String TAG = "SPEAKER";
     boolean mode=true;
     // Implements TextToSpeech.OnInitListener.
@@ -164,23 +174,53 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
         }
 
         else {
-            result = tw.setLanguage(Locale.US);//<<<===================================
-            mode=!mode;
+            result = en.setLanguage(Locale.US);//<<<===================================
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e(TAG, "Language is not available.");
             }
-            else tw.setSpeechRate(speed);
+            else en.setSpeechRate(speed);
         }
 
     }
 
     public void sayHello(String hello) {
-        // Select a random hello.
-        // Drop allpending entries in the playback queue
-        long start=System.currentTimeMillis();
-        tw.speak(hello, TextToSpeech.QUEUE_FLUSH, null);
-        //en.speak("hello", TextToSpeech.QUEUE_FLUSH, null);
-        long duration=System.currentTimeMillis()- start;
-        System.out.println(duration);
+        String[] msg=new String[50];
+        for(int i=0;i<50;i++)
+            msg[i]="";
+        int previous=0,count=0,speaker=0,current;
+        char first=hello.charAt(0);
+        if(first>='a' && first<='z' || first>='A' && first<='Z')
+            speaker=1;
+        for(int i=0;i<hello.length();i++)
+        {
+            current=0;
+            char ch1=hello.charAt(i);
+            if(ch1>='a' && ch1<='z' || ch1>='A' && ch1<='Z')
+                current=1;
+            else if(ch1==' '||ch1==',')
+                current=previous;
+
+            if(current!=previous)
+            {
+                previous=current;
+                count++;
+            }
+            msg[count]+=String.valueOf(ch1);
+        }
+
+        for(int i=0;i<=count;i++)
+        {
+            System.out.println(msg[i]);
+            if(speaker==0){
+                tw.speak(msg[i],TextToSpeech.QUEUE_ADD,null);
+                speaker++;
+                speaker%=2;
+            }
+            else {
+                en.speak(msg[i],TextToSpeech.QUEUE_ADD,null);
+                speaker++;
+                speaker%=2;
+            }
+        }
     }
 }

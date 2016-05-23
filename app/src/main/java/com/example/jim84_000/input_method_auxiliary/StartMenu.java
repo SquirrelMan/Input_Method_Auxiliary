@@ -40,7 +40,7 @@ public class StartMenu extends Activity{
                 Intent intent =new Intent();
                 intent.setClass(getApplicationContext(),InputActivity.class);
                 startActivity(intent);
-                StartMenu.this.finish();
+                //StartMenu.this.finish();
             }
         });
 

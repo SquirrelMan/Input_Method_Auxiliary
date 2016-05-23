@@ -35,9 +35,18 @@ public class Learn {
     //=======================================學習===============================================
     public void Learning(String message){
         try {
-            String msg=SpiltString(message, helper.getReadableDatabase());
-            System.out.println(msg);
+
             SQLiteDatabase db = helper.getWritableDatabase();
+            //handle sentence
+            if (message.length()>3){
+                if(!helper.update(false,message,db)){
+                    helper.insert(false,message,db);
+                }
+            }
+
+            String msg=SpiltString(message, db);
+            System.out.println(msg);
+
             //handle vocabulary
             for(int i = 0 ; i < pointer_storewordspilt+1 ; i++){
                 String tem_word=((i==pointer_storewordspilt)?"#":storewordspilt[i]);
@@ -58,10 +67,7 @@ public class Learn {
 
             }
             clear_storeword_spilt();
-            //handle sentence
-            if(!helper.update(false,message,db)){
-                helper.insert(false,message,db);
-            }
+
             db.close();
         }
         catch (Exception e){
@@ -113,7 +119,7 @@ public class Learn {
             char ch=s.charAt(i);
             String str = String.valueOf(ch);
             if((ch==32 )||(ch==44)){
-                tmp+=" ";
+                tmp+=String.valueOf(ch);
                 i++;
                 continue;
             }
@@ -127,7 +133,7 @@ public class Learn {
                     " WHERE "+DBConnection.VocSchema.CONTENT+" = '" + str + "';", null);
             if (c.getCount() > 0) {
                 c.moveToFirst();
-                tmp=tmp+str+" ";
+                tmp=tmp+" "+str+" ";
                 i++;
                 continue;
             }
