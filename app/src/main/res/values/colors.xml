@@ -5,4 +5,7 @@
     <color name="colorAccent">#FF4081</color>
     <color name="status_bar_color">#FF000000</color>
     <color name="layout_border_color">#FF111111</color>
+    <color name="MainBackground">#EFE3AF</color>
+    <color name="MainButton">#FDA634</color>
+    <color name="MainText">#5E573E</color>
 </resources>
