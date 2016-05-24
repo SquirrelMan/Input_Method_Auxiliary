@@ -42,6 +42,7 @@
         <activity
             android:name=".DBActivity"
             android:configChanges="orientation|keyboardHidden"
+            android:windowSoftInputMode="stateAlwaysHidden"
             android:theme="@android:style/Theme.NoTitleBar" />
         <activity
             android:name=".InputActivity"
@@ -78,6 +79,10 @@
             android:theme="@android:style/Theme.NoTitleBar" />
         <activity
             android:name=".Speech_Mode_Menu"
+            android:configChanges="orientation|keyboardHidden"
+            android:theme="@android:style/Theme.NoTitleBar" />
+        <activity
+            android:name=".Info"
             android:configChanges="orientation|keyboardHidden"
             android:theme="@android:style/Theme.NoTitleBar" />
         <!-- Used for transferring files  after a successful connection -->
