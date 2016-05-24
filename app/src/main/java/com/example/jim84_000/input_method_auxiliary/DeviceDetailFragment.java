@@ -99,11 +99,58 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
                         Intent intent=new Intent();
                         intent.setClass(WiFiDirectActivity.mContext,InputActivity.class);
                         startActivity(intent);
-
-
                     }
                 });
+        mContentView.findViewById(R.id.btn_start_speech).setOnClickListener(
+                new View.OnClickListener() {
 
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent();
+                        intent.setClass(WiFiDirectActivity.mContext, SpeechMode.class);
+                        startActivity(intent);
+                    }
+                });
+        mContentView.findViewById(R.id.btn_start_speechs1).setOnClickListener(
+                new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent();
+                        intent.setClass(WiFiDirectActivity.mContext, SpeechMode_sub1.class);
+                        startActivity(intent);
+                    }
+                });
+        mContentView.findViewById(R.id.btn_start_speechs2).setOnClickListener(
+                new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent();
+                        intent.setClass(WiFiDirectActivity.mContext, SpeechMode_sub2.class);
+                        startActivity(intent);
+                    }
+                });
+        mContentView.findViewById(R.id.btn_start_speechs3).setOnClickListener(
+                new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent();
+                        intent.setClass(WiFiDirectActivity.mContext, SpeechMode_sub3.class);
+                        startActivity(intent);
+                    }
+                });
+        mContentView.findViewById(R.id.btn_start_speechs4).setOnClickListener(
+                new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent();
+                        intent.setClass(WiFiDirectActivity.mContext, SpeechMode_sub4.class);
+                        startActivity(intent);
+                    }
+                });
         return mContentView;
     }
 
@@ -120,7 +167,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         TextView view = (TextView) mContentView.findViewById(R.id.group_owner);
         view.setText(getResources().getString(R.string.group_owner_text)
                 + ((info.isGroupOwner == true) ? getResources().getString(R.string.yes)
-                        : getResources().getString(R.string.no)));
+                : getResources().getString(R.string.no)));
 
         // InetAddress from WifiP2pInfo struct.
         view = (TextView) mContentView.findViewById(R.id.device_info);
@@ -130,7 +177,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         // server. The file server is single threaded, single connection server
         // socket.
         if (info.groupFormed && info.isGroupOwner) {
-           // new FileServerAsyncTask(getActivity(), mContentView.findViewById(R.id.status_text)) .execute();
+            // new FileServerAsyncTask(getActivity(), mContentView.findViewById(R.id.status_text)) .execute();
             Intent intent=new Intent();
             intent.setClass(getActivity(), DisplayActivity.class);
             startActivity(intent);
@@ -140,6 +187,11 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
             mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
             ((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources()
                     .getString(R.string.client_text));
+            mContentView.findViewById(R.id.btn_start_speech).setVisibility(View.VISIBLE);
+            mContentView.findViewById(R.id.btn_start_speechs1).setVisibility(View.VISIBLE);
+            mContentView.findViewById(R.id.btn_start_speechs2).setVisibility(View.VISIBLE);
+            mContentView.findViewById(R.id.btn_start_speechs3).setVisibility(View.VISIBLE);
+            mContentView.findViewById(R.id.btn_start_speechs4).setVisibility(View.VISIBLE);
         }
 
         // hide the connect button
@@ -148,7 +200,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 
     /**
      * Updates the UI with device data
-     * 
+     *
      * @param device the device to be displayed
      */
     public void showDetails(WifiP2pDevice device) {
@@ -175,6 +227,11 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         view = (TextView) mContentView.findViewById(R.id.status_text);
         view.setText(R.string.empty);
         mContentView.findViewById(R.id.btn_start_client).setVisibility(View.GONE);
+        mContentView.findViewById(R.id.btn_start_speech).setVisibility(View.GONE);
+        mContentView.findViewById(R.id.btn_start_speechs1).setVisibility(View.GONE);
+        mContentView.findViewById(R.id.btn_start_speechs2).setVisibility(View.GONE);
+        mContentView.findViewById(R.id.btn_start_speechs3).setVisibility(View.GONE);
+        mContentView.findViewById(R.id.btn_start_speechs4).setVisibility(View.GONE);
         this.getView().setVisibility(View.GONE);
     }
 
@@ -186,7 +243,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         byte buf[] = new byte[1024];
         int len;
         long startTime=System.currentTimeMillis();
-        
+
         try {
             while ((len = inputStream.read(buf)) != -1) {
                 out.write(buf, 0, len);
@@ -195,7 +252,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
             inputStream.close();
             long endTime=System.currentTimeMillis()-startTime;
             Log.v("","Time taken to transfer all bytes is : "+endTime);
-            
+
         } catch (IOException e) {
             Log.d(WiFiDirectActivity.TAG, e.toString());
             return false;

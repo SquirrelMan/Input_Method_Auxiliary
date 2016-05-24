@@ -28,6 +28,10 @@ public class StartMenu extends Activity{
             public void onClick(View v) {
                 InputActivity.con=true;
                 SpeechMode.con=true;
+                SpeechMode_sub1.con=true;
+                SpeechMode_sub2.con=true;
+                SpeechMode_sub3.con=true;
+                SpeechMode_sub4.con=true;
                 Intent intent =new Intent();
                 intent.setClass(getApplicationContext(),WiFiDirectActivity.class);
                 startActivity(intent);
@@ -67,6 +71,11 @@ public class StartMenu extends Activity{
         mode[4].setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SpeechMode.con=false;
+                SpeechMode_sub1.con=false;
+                SpeechMode_sub2.con=false;
+                SpeechMode_sub3.con=false;
+                SpeechMode_sub4.con=false;
                 Intent intent = new Intent();
                 intent.setClass(getApplicationContext(), Speech_Mode_Menu.class);
                 startActivity(intent);
