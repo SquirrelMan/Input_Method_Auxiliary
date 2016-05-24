@@ -9,29 +9,27 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="開發計畫──\n    我的專屬翻譯機"
-        android:textSize="30dp"
+        android:textSize="60dp"
         android:layout_gravity="center"
         android:textColor="@color/MainText">
     </TextView>
     <ImageView
         android:id="@+id/imageview_welcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
         android:layout_gravity="center"
         android:src="@drawable/start"
-        android:layout_weight="1"
         />
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
+        android:layout_width="400dp"
+        android:layout_height="90dp"
         android:text="    計畫啟動    "
         android:id="@+id/btn_goto_start_menu"
         android:background="@drawable/button"
-        android:textSize="30dp"
+        android:textSize="45dp"
         android:layout_gravity="center"
-        android:textColor="@color/MainText"
-        android:layout_weight="10"/>
+        android:textColor="@color/MainText" />
 
     <TextView android:layout_weight="1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="" android:textSize="45dp"></TextView>
 </LinearLayout>

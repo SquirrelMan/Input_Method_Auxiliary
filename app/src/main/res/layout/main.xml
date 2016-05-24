@@ -3,25 +3,46 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
-    <LinearLayout
+    android:layout_height="fill_parent"
+    android:background="@color/MainBackground">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="連線模式"
+        android:textSize="60dp"
+        android:layout_gravity="center"
+        android:textColor="@color/MainText"></TextView>
+    <TextView
         android:layout_width="match_parent"
-        android:id="@+id/linearLayout1"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-        <fragment
-            class="com.example.jim84_000.input_method_auxiliary.DeviceListFragment"
-            android:id="@+id/frag_list"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="30dp"
+        android:layout_gravity="center"
+        android:background="@drawable/line"
+        android:textColor="@color/MainText"></TextView>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/scrollView2" >
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/phone_list_height">
-            <!-- Preview: layout=@layout/row_devices -->
-        </fragment>
-        <fragment
-            class="com.example.jim84_000.input_method_auxiliary.DeviceDetailFragment"
-            android:id="@+id/frag_detail"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <!-- Preview: layout=@layout/device_detail -->
-        </fragment>
-    </LinearLayout>
+            android:id="@+id/linearLayout1"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <fragment
+                class="com.example.jim84_000.input_method_auxiliary.DeviceListFragment"
+                android:id="@+id/frag_list"
+                android:layout_width="match_parent"
+                android:layout_height="400dp">
+                <!-- Preview: layout=@layout/row_devices -->
+            </fragment>
+            <fragment
+                class="com.example.jim84_000.input_method_auxiliary.DeviceDetailFragment"
+                android:id="@+id/frag_detail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <!-- Preview: layout=@layout/device_detail -->
+            </fragment>
+        </LinearLayout>
+    </ScrollView>>
 </LinearLayout>

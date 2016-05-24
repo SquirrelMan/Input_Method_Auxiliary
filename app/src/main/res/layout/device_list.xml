@@ -10,7 +10,9 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:text="@string/label_me" />
+        android:text="我的翻譯機"
+        android:textSize="45dp"
+        android:textColor="@color/MainText"/>
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dp"
@@ -29,25 +31,29 @@
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
             android:layout_marginRight="2dp"
-            android:src="@drawable/machine" />
+            android:src="@drawable/ic_launcher" />
         <LinearLayout
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="fill_parent">
             <TextView
                 android:id="@+id/my_name"
                 android:layout_width="fill_parent"
-                android:layout_height="0dp"
+                android:layout_height="45dp"
                 android:layout_weight="1"
-                android:gravity="center_vertical" />
+                android:gravity="center_vertical"
+                android:textSize="30dp"
+                android:textColor="@color/MainText"/>
             <TextView
                 android:id="@+id/my_status"
                 android:layout_width="fill_parent"
-                android:layout_height="0dp"
+                android:layout_height="45dp"
                 android:layout_weight="1"
                 android:singleLine="true"
-                android:ellipsize="marquee" />
+                android:ellipsize="marquee"
+                android:textSize="30dp"
+                android:textColor="@color/MainText"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -55,7 +61,9 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:text="@string/label_peers" />
+        android:text="我的顯示器(點選連線)"
+        android:textSize="45dp"
+        android:textColor="@color/MainText"/>
 
     <View
         android:layout_width="fill_parent"
@@ -69,12 +77,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:drawSelectorOnTop="false" />
+        android:drawSelectorOnTop="false"
+        android:textSize="30dp"
+        android:textColor="@color/MainText"/>
 
     <TextView
         android:id="@id/android:empty"
         android:layout_width="match_parent"
         android:layout_gravity="center"
         android:layout_height="match_parent"
+        android:textSize="30dp"
+        android:textColor="@color/MainText"
         android:text="@string/empty_message" />
 </LinearLayout>
