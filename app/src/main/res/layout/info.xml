@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/MainBackground">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="操作說明"
+                android:textSize="60dp"
+                android:layout_gravity="center"
+                android:textColor="@color/MainText"></TextView>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="30dp"
+                android:layout_gravity="center"
+                android:background="@drawable/line"
+                android:textColor="@color/MainText"></TextView>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="基本流程：\n    輸入端：連線模式->設定WIFI->點選搜尋->選擇顯示端裝置->啟動->進入\n    顯示端：連線模式->設定WIFI->點選搜尋\n\n資料轉移：\n    學習資料檔名須為LearnData.data。外部資料庫轉移檔名須為Database.db。路徑都為手機裡的Download資料夾。\n\n演講模式:\n    每個資料夾都在手機裡的Speaker資料夾裡，資料須先存放；才能撥放。筆電USB可能看不到，可以從手機看到，並使用雲端傳送\n\n"
+                android:textSize="45dp"
+                android:textColor="@color/MainText">
+            </TextView>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
