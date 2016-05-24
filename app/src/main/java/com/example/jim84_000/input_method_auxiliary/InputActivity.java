@@ -200,7 +200,9 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             @Override
             public void onClick(View v) {
                 sentence();
-                spinner.setAdapter(new ArrayAdapter<CharSequence>(InputActivity.this, android.R.layout.simple_spinner_item, list));
+                ArrayAdapter adapter=new ArrayAdapter<CharSequence>(InputActivity.this, R.layout.myspinner, list);
+                adapter.setDropDownViewResource(R.layout.myspinner);
+                spinner.setAdapter(adapter);
                 spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                         String _content = ((Spinner) parent).getSelectedItem().toString();
