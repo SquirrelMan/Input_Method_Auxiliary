@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.Button;
 
 public class StartMenu extends Activity{
-    Button[] mode=new Button[5];
+    Button[] mode=new Button[6];
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -20,6 +20,7 @@ public class StartMenu extends Activity{
         mode[2]=(Button)findViewById(R.id.btn_mode3);
         mode[3]=(Button)findViewById(R.id.btn_mode4);
         mode[4]=(Button)findViewById(R.id.btn_mode5);
+        mode[5]=(Button)findViewById(R.id.btn_mode6);
 
 
         mode[0].setOnClickListener(new View.OnClickListener() {
@@ -67,6 +68,14 @@ public class StartMenu extends Activity{
             public void onClick(View v) {
                 Intent intent = new Intent();
                 intent.setClass(getApplicationContext(), Speech_Mode_Menu.class);
+                startActivity(intent);
+            }
+        });
+        mode[5].setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(getApplicationContext(), Info.class);
                 startActivity(intent);
             }
         });
