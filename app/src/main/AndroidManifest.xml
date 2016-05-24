@@ -38,7 +38,7 @@
         <activity
             android:name=".StartMenu"
             android:configChanges="orientation|keyboardHidden"
-            android:theme="@android:style/Theme.NoTitleBar" />
+            android:theme="@android:style/Theme.Holo"/>
         <activity
             android:name=".DBActivity"
             android:configChanges="orientation|keyboardHidden"
@@ -58,6 +58,26 @@
             android:theme="@android:style/Theme.NoTitleBar" />
         <activity
             android:name=".SpeechMode"
+            android:configChanges="orientation|keyboardHidden"
+            android:theme="@android:style/Theme.NoTitleBar" />
+        <activity
+            android:name=".SpeechMode_sub1"
+            android:configChanges="orientation|keyboardHidden"
+            android:theme="@android:style/Theme.NoTitleBar" />
+        <activity
+            android:name=".SpeechMode_sub2"
+            android:configChanges="orientation|keyboardHidden"
+            android:theme="@android:style/Theme.NoTitleBar" />
+        <activity
+            android:name=".SpeechMode_sub3"
+            android:configChanges="orientation|keyboardHidden"
+            android:theme="@android:style/Theme.NoTitleBar" />
+        <activity
+            android:name=".SpeechMode_sub4"
+            android:configChanges="orientation|keyboardHidden"
+            android:theme="@android:style/Theme.NoTitleBar" />
+        <activity
+            android:name=".Speech_Mode_Menu"
             android:configChanges="orientation|keyboardHidden"
             android:theme="@android:style/Theme.NoTitleBar" />
         <!-- Used for transferring files  after a successful connection -->
