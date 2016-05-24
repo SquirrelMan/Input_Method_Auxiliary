@@ -20,16 +20,12 @@ public class WelcomePage extends Activity{
         goto_startmenu=(Button)findViewById(R.id.btn_goto_start_menu);
         File sdDir = Environment.getExternalStorageDirectory();
         File buildMySpeaker = new File(sdDir, "MySpeaker");
-        File builddatabase = new File(sdDir, "MySpeaker/Database");
-        File buildlearn = new File(sdDir, "MySpeaker/Learn");
         File buildmain = new File(sdDir, "MySpeaker/Main");
         File buildsub1 = new File(sdDir, "MySpeaker/Sub1");
         File buildsub2 = new File(sdDir, "MySpeaker/Sub2");
         File buildsub3 = new File(sdDir, "MySpeaker/Sub3");
         File buildsub4 = new File(sdDir, "MySpeaker/Sub4");
         isExist(buildMySpeaker.toString());
-        isExist(builddatabase.toString());
-        isExist(buildlearn.toString());
         isExist(buildmain.toString());
         isExist(buildsub1.toString());
         isExist(buildsub2.toString());
