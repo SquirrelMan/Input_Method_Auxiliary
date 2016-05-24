@@ -8,7 +8,7 @@
     <TextView android:layout_weight="2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="開發計畫──\n    我的專屬蒟蒻"
+        android:text="開發計畫──\n    我的專屬翻譯蒟蒻"
         android:textSize="60dp"
         android:layout_gravity="center"
         android:textColor="@color/MainText">

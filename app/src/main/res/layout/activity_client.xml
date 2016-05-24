@@ -27,14 +27,14 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="60dp"
+        android:textSize="40dp"
         android:id="@+id/editText"
         android:focusable="true" />
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="60dp"
+        android:textSize="30dp"
         android:text="送出"
         android:id="@+id/btn_send"
         android:background="@drawable/button"
