@@ -24,7 +24,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 public class DataMove extends Activity {
-    static final String _path=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath();
+    final int REQUEST_CODE=0;
+    static final String _path="/sdcard/Download";
     public static final String _DBName="Database.db";
     public static String _LDName=_path+"/LearnData.data";
     View.OnClickListener listener_moveintoout = null;
@@ -92,12 +93,11 @@ public class DataMove extends Activity {
         };
         listener_learndata = new View.OnClickListener() {
             public void onClick(View v) {
-                /*Intent intent = new Intent(Intent.ACTION_PICK);
-                File mFile = new File(_path);
-                intent.setData(Uri.fromFile(mFile));
-                intent.setType("file:///");
-                Intent Chooser = intent.createChooser(intent, null);
-                startActivityForResult(Chooser, 0);*/
+                final String mimeType = "*/*";
+                final Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType(mimeType);
+                //startActivityForResult(intent, REQUEST_CODE);
+
                 learnfromfile();
             }
         };
@@ -261,29 +261,33 @@ public class DataMove extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
+        System.out.println("6666666666666666666666666666");
         // TODO Auto-generated method stub
         super.onActivityResult(requestCode, resultCode, data);
-
+        System.out.println("777777777777777777777777");
         // 有選擇檔案
-        if ( resultCode == RESULT_OK  && requestCode == 0)
+        if ( resultCode == RESULT_OK  && requestCode == REQUEST_CODE)
         {
+            System.out.println("8888888888888888888888888");
             // 取得檔案的 Uri
             Uri uri = data.getData();
             if( uri != null )
             {
                 _LDName=uri.getPath();
-                learnfromfile();
+                System.out.println(_LDName);
+                //learnfromfile();
             }
             else
             {
+                System.out.println("9999999999999999999999");
                 setTitle("無效的檔案路徑 !!");
             }
         }
         else
         {
+            System.out.println("0000000000000000000000000000");
             setTitle("取消選擇檔案 !!");
-            learnfromfile();
+            //learnfromfile();
         }
     }
 

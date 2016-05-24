@@ -27,6 +27,7 @@ public class StartMenu extends Activity{
             @Override
             public void onClick(View v) {
                 InputActivity.con=true;
+                SpeechMode.con=true;
                 Intent intent =new Intent();
                 intent.setClass(getApplicationContext(),WiFiDirectActivity.class);
                 startActivity(intent);

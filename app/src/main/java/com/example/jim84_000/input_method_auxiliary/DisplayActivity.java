@@ -53,6 +53,7 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
             en.stop();
             en.shutdown();
         }
+        tw=en=null;
         try {
             serverSocket.close();
         }catch (IOException e){
@@ -122,7 +123,7 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
                                 tv.setTextSize(font);
                                 tv.setText(line);
                                 if(line.length()>0)
-                                    sayHello(line);
+                                    sayHello(" "+line);
                             }
                         });
                     }while (line!=null);
@@ -184,6 +185,7 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
     }
 
     public void sayHello(String hello) {
+        //tw.speak(hello,TextToSpeech.QUEUE_ADD,null);
         String[] msg=new String[50];
         for(int i=0;i<50;i++)
             msg[i]="";

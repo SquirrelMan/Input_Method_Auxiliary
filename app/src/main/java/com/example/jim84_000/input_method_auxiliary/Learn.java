@@ -35,10 +35,10 @@ public class Learn {
     //=======================================學習===============================================
     public void Learning(String message){
         try {
-
+            int sentece_lenth=2;
             SQLiteDatabase db = helper.getWritableDatabase();
             //handle sentence
-            if (message.length()>3){
+            if (message.length()>sentece_lenth){
                 if(!helper.update(false,message,db)){
                     helper.insert(false,message,db);
                 }

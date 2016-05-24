@@ -382,8 +382,8 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                 learn.Learning(message);
             }
         }).start();
-        if (status_speech&&message.length()>0)
-            sayHello(message);
+        if (status_speech && message.length()>0)
+            sayHello(" "+message);
         if (con) {
             try {
                 //傳送資料
@@ -443,6 +443,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             en.stop();
             en.shutdown();
         }
+        tw=en=null;
         terminate();
     }
 
@@ -580,6 +581,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     }
 
     public void sayHello(String hello) {
+     // tw.speak(hello,TextToSpeech.QUEUE_ADD,null);
         String[] msg=new String[50];
         for(int i=0;i<50;i++)
             msg[i]="";

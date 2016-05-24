@@ -2,30 +2,38 @@ package com.example.jim84_000.input_method_auxiliary;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
-import android.content.Intent;
-import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.StrictMode;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import static android.os.StrictMode.setThreadPolicy;
 
 /**
  * Created by jim84_000 on 2016/5/19.
@@ -36,6 +44,11 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
     File _CurrentFilePath;
     Handler handler=new Handler();
     ProgressDialog dialog;
+    private DataOutputStream out; //for transfer
+    public static boolean con = false;
+    public static final String IP_SERVER = "192.168.49.1";
+    public static int PORT = 8988;
+    private Socket socket;
 
     @Override
     protected void onDestroy() {
@@ -50,12 +63,17 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
             en.stop();
             en.shutdown();
         }
+        terminate();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.speech_list);
+        if (Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            setThreadPolicy(policy);
+        }
         tw=new TextToSpeech(this,this);
         en=new TextToSpeech(this,this);
         this.setListAdapter(this.createListAdapter());
@@ -66,7 +84,7 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
     private ListAdapter createListAdapter() {
         List<String> list = new ArrayList<String>();
         File sdDir = Environment.getExternalStorageDirectory();
-        File cwDir = new File(sdDir, "Download");
+        File cwDir = new File(sdDir, "MySpeaker/Main");
         this.parentPath = cwDir.getPath();
         Log.d(TAG, "根目錄：" + this.parentPath);
         File[] files = cwDir.listFiles();
@@ -109,18 +127,70 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
         //this.startActivity(it);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (con)
+            ConnectToDisplay();
+    }
+
+    private void ConnectToDisplay() {
+        try {
+            InetAddress serverAddr;
+            SocketAddress sc_add;            //設定Server IP位置
+            serverAddr = InetAddress.getByName(IP_SERVER);
+            //設定port
+            sc_add = new InetSocketAddress(serverAddr, PORT);
+
+            socket = new Socket();
+            //與Server連線，timeout時間2秒
+            socket.connect(sc_add, 2000);
+            out = new DataOutputStream(socket.getOutputStream());
+        } catch (IOException e) {
+            Toast.makeText(getApplicationContext(), "連線失敗", Toast.LENGTH_SHORT).show();
+            this.finish();
+        }
+    }
+
+    private void terminate() {
+        if (con) {
+            try {
+                out.close();
+                socket.close();
+            } catch (Exception e) {
+            }
+        }
+    }
+
     //從File讀取data
     private Runnable SpeakFile = new Runnable() {
         @Override
         public void run() {
+            Looper.prepare();
             try {
                 File myFile = _CurrentFilePath;
                 FileInputStream fIn = new FileInputStream(myFile);
                 BufferedReader myReader = new BufferedReader(new InputStreamReader(fIn));
                 String aDataRow = "";
+                //String aDataSum = "";
                 while ((aDataRow = myReader.readLine()) != null) {
+                    //aDataSum+=aDataRow;
                     if(aDataRow.length()==0)
                         continue;
+                    if (con) {
+                        try {
+                            //傳送資料
+                            out.writeUTF(aDataRow);
+                            Toast.makeText(getApplicationContext(), "成功傳送!", Toast.LENGTH_SHORT).show();
+                            Thread.sleep(3000);
+                        } catch (IOException e) {
+                            Toast.makeText(getApplicationContext(), "傳送失敗", Toast.LENGTH_SHORT).show();
+                        }
+                        catch(InterruptedException e){
+                            e.printStackTrace();
+                        }
+                    }
+                    /*
                     char ch=aDataRow.charAt(0);
                     if((ch>='a' && ch<='z') || (ch>='A' && ch<='Z'))
                     {
@@ -130,8 +200,7 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
                     else{
                         //System.out.println("TW Line");
                         sayHello(aDataRow,1);
-                    }
-
+                    }*/
                 }
                 myReader.close();
             } catch (FileNotFoundException e) {
@@ -139,6 +208,7 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
             } catch (IOException e) {
                 Log.e(TAG, "Can not read file: " + e.toString());
             }
+            Looper.loop();
         }
     };
 
