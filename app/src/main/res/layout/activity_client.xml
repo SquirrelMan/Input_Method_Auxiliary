@@ -12,7 +12,7 @@
         <Button android:id="@+id/Button_sentence"
             android:layout_width="wrap_content"
             android:text="搜尋句子"
-            android:textSize="60dp"
+            android:textSize="45dp"
             android:layout_height="wrap_content"
             android:background="@drawable/button"
             android:textColor="@color/MainText">
