@@ -147,10 +147,10 @@ public class DBConnection extends SQLiteOpenHelper {
             int id=c.getInt(c.getColumnIndex(id_name));
             int count=c.getInt(c.getColumnIndex(count_name))+1;
             ContentValues values=new ContentValues();
-            values.put(VocSchema.COUNT,count);
-            String where=VocSchema.ID+ " = "+id;
+            values.put(count_name,count);
+            String where=id_name+ " = "+id;
             try {
-                db.update(VocSchema.TABLE_NAME,values,where,null);
+                db.update(table_name,values,where,null);
                 ret=true;
                 System.out.println("UPDATE SUCCESS "+out);
             }catch (Exception e){
