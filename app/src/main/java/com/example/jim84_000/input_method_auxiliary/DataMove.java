@@ -219,9 +219,12 @@ public class DataMove extends Activity {
             BufferedReader myReader = new BufferedReader(new InputStreamReader(fIn));
             String aDataRow = "";
             String aBuffer = "";
+            int row=0;
             while ((aDataRow = myReader.readLine()) != null) {
-                aBuffer += aDataRow + "\n";
+                //aBuffer += aDataRow + "\n";
                 learn.Learning(aDataRow);
+                row++;
+                System.out.println(row);
             }
             success=true;
             myReader.close();

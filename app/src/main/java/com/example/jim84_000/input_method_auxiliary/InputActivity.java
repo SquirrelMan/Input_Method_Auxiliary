@@ -382,8 +382,8 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
                 learn.Learning(message);
             }
         }).start();
-        if (status_speech&&message.length()>0)
-            sayHello(message);
+        if (status_speech && message.length()>0)
+            sayHello(" "+message);
         if (con) {
             try {
                 //傳送資料
@@ -443,6 +443,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             en.stop();
             en.shutdown();
         }
+        tw=en=null;
         terminate();
     }
 
@@ -560,27 +561,36 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
     private void language(){
         float speed=(float)0.8;
         int result;
-        if(mode){
+        if(!mode){
+            result = en.setLanguage(Locale.US);//<<<===================================
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e(TAG, "Language is not available.");
+            }
+            else{
+                en.setSpeechRate(speed);
+                //Toast.makeText(this,"EN",Toast.LENGTH_SHORT).show();
+                System.out.println("EN READY");
+            }
+        }
+
+        else {
             result = tw.setLanguage(Locale.TAIWAN);//<<<===================================
             mode=!mode;
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e(TAG, "Language is not available.");
             }
-            else tw.setSpeechRate(speed);
-        }
-
-        else {
-            result = en.setLanguage(Locale.US);//<<<===================================
-            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Log.e(TAG, "Language is not available.");
+            else{
+                tw.setSpeechRate(speed);
+                //Toast.makeText(this,"TW",Toast.LENGTH_SHORT).show();
+                System.out.println("TW READY");
             }
-            else en.setSpeechRate(speed);
         }
 
     }
 
     public void sayHello(String hello) {
-        String[] msg=new String[50];
+       //tw.speak(hello,TextToSpeech.QUEUE_ADD,null);
+       String[] msg=new String[50];
         for(int i=0;i<50;i++)
             msg[i]="";
         int previous=0,count=0,speaker=0,current;
@@ -593,7 +603,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
             char ch1=hello.charAt(i);
             if(ch1>='a' && ch1<='z' || ch1>='A' && ch1<='Z')
                 current=1;
-            else if(ch1==' '||ch1==',')
+            else if(ch1==' '||ch1==','||ch1=='-')
                 current=previous;
 
             if(current!=previous)

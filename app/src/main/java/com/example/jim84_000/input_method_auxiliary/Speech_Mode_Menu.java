@@ -24,6 +24,7 @@ public class Speech_Mode_Menu extends Activity {
         mode[0].setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SpeechMode.path="Main";
                 Intent intent = new Intent();
                 intent.setClass(getApplicationContext(), SpeechMode.class);
                 startActivity(intent);
@@ -33,8 +34,9 @@ public class Speech_Mode_Menu extends Activity {
         mode[1].setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SpeechMode.path="Sub1";
                 Intent intent = new Intent();
-                intent.setClass(getApplicationContext(), SpeechMode_sub1.class);
+                intent.setClass(getApplicationContext(), SpeechMode.class);
                 startActivity(intent);
             }
         });
@@ -42,8 +44,9 @@ public class Speech_Mode_Menu extends Activity {
         mode[2].setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SpeechMode.path="Sub2";
                 Intent intent =new Intent();
-                intent.setClass(getApplicationContext(), SpeechMode_sub2.class);
+                intent.setClass(getApplicationContext(), SpeechMode.class);
                 startActivity(intent);
             }
         });
@@ -51,8 +54,9 @@ public class Speech_Mode_Menu extends Activity {
         mode[3].setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SpeechMode.path="Sub3";
                 Intent intent = new Intent();
-                intent.setClass(getApplicationContext(), SpeechMode_sub3.class);
+                intent.setClass(getApplicationContext(), SpeechMode.class);
                 startActivity(intent);
             }
         });
@@ -60,8 +64,9 @@ public class Speech_Mode_Menu extends Activity {
         mode[4].setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                SpeechMode.path="Sub4";
                 Intent intent = new Intent();
-                intent.setClass(getApplicationContext(), SpeechMode_sub4.class);
+                intent.setClass(getApplicationContext(), SpeechMode.class);
                 startActivity(intent);
             }
         });

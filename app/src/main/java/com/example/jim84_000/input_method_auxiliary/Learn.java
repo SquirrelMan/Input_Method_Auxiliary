@@ -35,7 +35,7 @@ public class Learn {
     //=======================================學習===============================================
     public void Learning(String message){
         try {
-            int sentece_lenth=2;
+            int sentece_lenth=1;
             SQLiteDatabase db = helper.getWritableDatabase();
             //handle sentence
             if (message.length()>sentece_lenth){
@@ -50,7 +50,8 @@ public class Learn {
             //handle vocabulary
             for(int i = 0 ; i < pointer_storewordspilt+1 ; i++){
                 String tem_word=((i==pointer_storewordspilt)?"#":storewordspilt[i]);
-                System.out.println(tem_word);
+
+                //System.out.println(tem_word);
                 if(!helper.update(true,tem_word,db)){
                     helper.insert(true,tem_word,db);
                 }
@@ -60,7 +61,7 @@ public class Learn {
                 String tem_secondword=((i==pointer_storewordspilt-1)?"#":storewordspilt[i+1]);
                 int id1=helper.getVocID(storewordspilt[i],db);
                 int id2=helper.getVocID(tem_secondword,db);
-                System.out.println(tem_secondword);
+                //System.out.println(tem_secondword);
                 if(!helper.update(id1,id2,db)){
                     helper.insert(id1,id2,db);
                 }
@@ -101,6 +102,9 @@ public class Learn {
                 sb.append(wordSpilt);
             }
             String w = word.getString();
+            char ch=w.charAt(0);
+            if ((ch>='A' && ch<='Z') || (ch>='a' && ch<='z'))
+                w+=" ";
             storewordspilt[pointer_storewordspilt]=w;
             pointer_storewordspilt++;
             sb.append(w);

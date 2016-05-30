@@ -106,6 +106,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 
                     @Override
                     public void onClick(View v) {
+                        SpeechMode.path="Main";
                         Intent intent = new Intent();
                         intent.setClass(WiFiDirectActivity.mContext, SpeechMode.class);
                         startActivity(intent);
@@ -116,8 +117,9 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 
                     @Override
                     public void onClick(View v) {
+                        SpeechMode.path="Sub1";
                         Intent intent = new Intent();
-                        intent.setClass(WiFiDirectActivity.mContext, SpeechMode_sub1.class);
+                        intent.setClass(WiFiDirectActivity.mContext, SpeechMode.class);
                         startActivity(intent);
                     }
                 });
@@ -126,8 +128,9 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 
                     @Override
                     public void onClick(View v) {
+                        SpeechMode.path="Sub2";
                         Intent intent = new Intent();
-                        intent.setClass(WiFiDirectActivity.mContext, SpeechMode_sub2.class);
+                        intent.setClass(WiFiDirectActivity.mContext, SpeechMode.class);
                         startActivity(intent);
                     }
                 });
@@ -136,8 +139,9 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 
                     @Override
                     public void onClick(View v) {
+                        SpeechMode.path="Sub3";
                         Intent intent = new Intent();
-                        intent.setClass(WiFiDirectActivity.mContext, SpeechMode_sub3.class);
+                        intent.setClass(WiFiDirectActivity.mContext, SpeechMode.class);
                         startActivity(intent);
                     }
                 });
@@ -146,8 +150,9 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
 
                     @Override
                     public void onClick(View v) {
+                        SpeechMode.path="Sub4";
                         Intent intent = new Intent();
-                        intent.setClass(WiFiDirectActivity.mContext, SpeechMode_sub4.class);
+                        intent.setClass(WiFiDirectActivity.mContext, SpeechMode.class);
                         startActivity(intent);
                     }
                 });

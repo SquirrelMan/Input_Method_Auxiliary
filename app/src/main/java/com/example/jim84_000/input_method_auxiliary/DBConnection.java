@@ -78,7 +78,7 @@ public class DBConnection extends SQLiteOpenHelper {
         values.put(content_name,content);
         try{
             newid=(int)db.insert(table_name,null,values);
-            System.out.println("Insert SUCCESS "+out);
+            //System.out.println("Insert SUCCESS "+out);
         }catch (Exception e){
             e.printStackTrace();
             System.out.println("Insert Failed " + out);
@@ -93,7 +93,7 @@ public class DBConnection extends SQLiteOpenHelper {
         values.put(RelationSchema.ID2,id2);
         try{
             newid=(int)db.insert(RelationSchema.TABLE_NAME,null,values);
-            System.out.println("Insert SUCCESS RELATION1");
+            //System.out.println("Insert SUCCESS RELATION1");
         }catch (Exception e){
             e.printStackTrace();
             //System.out.println("Insert Failed RELATION1");
@@ -152,7 +152,7 @@ public class DBConnection extends SQLiteOpenHelper {
             try {
                 db.update(table_name,values,where,null);
                 ret=true;
-                System.out.println("UPDATE SUCCESS "+out);
+                //System.out.println("UPDATE SUCCESS "+out);
             }catch (Exception e){
                 e.printStackTrace();
                 System.out.println("UPDATE FAIL "+out);
@@ -177,7 +177,7 @@ public class DBConnection extends SQLiteOpenHelper {
             try {
                 db.update(RelationSchema.TABLE_NAME,values,where,null);
                 ret=true;
-                System.out.println("UPDATE SUCCESS RELATION");
+                //System.out.println("UPDATE SUCCESS RELATION");
             }catch (Exception e){
                 e.printStackTrace();
                 System.out.println("UPDATE FAIL RELATION");

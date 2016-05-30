@@ -39,7 +39,7 @@ import static android.os.StrictMode.setThreadPolicy;
  * Created by jim84_000 on 2016/5/19.
  */
 public class SpeechMode extends ListActivity implements AdapterView.OnItemClickListener, TextToSpeech.OnInitListener {
-
+    public static String path="Main";
     private String parentPath;
     File _CurrentFilePath;
     Handler handler=new Handler();
@@ -84,7 +84,7 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
     private ListAdapter createListAdapter() {
         List<String> list = new ArrayList<String>();
         File sdDir = Environment.getExternalStorageDirectory();
-        File cwDir = new File(sdDir, "MySpeaker/Main");
+        File cwDir = new File(sdDir, "MySpeaker/"+path);
         this.parentPath = cwDir.getPath();
         Log.d(TAG, "根目錄：" + this.parentPath);
         File[] files = cwDir.listFiles();
@@ -107,24 +107,6 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
         _CurrentFilePath=file;
 
         new Thread(SpeakFile).start();
-
-        // 開啟檔案
-        //Intent it = new Intent(Intent.ACTION_VIEW);
-        //String ext = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
-        //Log.d(TAG, "ext: " + ext);
-        //if (ext == null || "".equals(ext)) {
-         //   return;
-        //}
-        //String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-        //        ext);
-        //Log.d(TAG, "mimeType: " + mimeType);
-
-        // data 與 type 一定要一起呼叫
-        //it.setDataAndType(Uri.fromFile(file), mimeType);
-        // 不可以分開呼叫
-        // it.setData(Uri.fromFile(file));
-        // it.setType(mimeType);
-        //this.startActivity(it);
     }
 
     @Override
@@ -172,9 +154,7 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
                 FileInputStream fIn = new FileInputStream(myFile);
                 BufferedReader myReader = new BufferedReader(new InputStreamReader(fIn));
                 String aDataRow = "";
-                //String aDataSum = "";
                 while ((aDataRow = myReader.readLine()) != null) {
-                    //aDataSum+=aDataRow;
                     if(aDataRow.length()==0)
                         continue;
                     if (con) {
@@ -182,25 +162,23 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
                             //傳送資料
                             out.writeUTF(aDataRow);
                             Toast.makeText(getApplicationContext(), "成功傳送!", Toast.LENGTH_SHORT).show();
-                            Thread.sleep(3000);
                         } catch (IOException e) {
                             Toast.makeText(getApplicationContext(), "傳送失敗", Toast.LENGTH_SHORT).show();
                         }
-                        catch(InterruptedException e){
-                            e.printStackTrace();
-                        }
-                    }
-                    /*
-                    char ch=aDataRow.charAt(0);
-                    if((ch>='a' && ch<='z') || (ch>='A' && ch<='Z'))
-                    {
-                        //System.out.println("EN Line");
-                        sayHello(aDataRow,0);
                     }
                     else{
-                        //System.out.println("TW Line");
-                        sayHello(aDataRow,1);
-                    }*/
+                        char ch=aDataRow.charAt(0);
+                        if((ch>='a' && ch<='z') || (ch>='A' && ch<='Z'))
+                        {
+                            //System.out.println("EN Line");
+                            sayHello(aDataRow,0);
+                        }
+                        else{
+                            //System.out.println("TW Line");
+                            sayHello(aDataRow,1);
+                        }
+                    }
+
                 }
                 myReader.close();
             } catch (FileNotFoundException e) {
@@ -215,6 +193,7 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
     //=============================================語音==============================================
     private TextToSpeech tw,en;
     private static final String TAG = "SPEAKER";
+    boolean mode=true;
     // Implements TextToSpeech.OnInitListener.
     public void onInit(int status) {
         // status can be either TextToSpeech.SUCCESS or TextToSpeech.ERROR.
@@ -229,24 +208,30 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
     private void language(){
         float speed=(float)0.8;
         int result;
-
-        result = tw.setLanguage(Locale.TAIWAN);//<<<===================================
-        if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-            Log.e(TAG, "Language is not available.");
-        }
-        else {
-            tw.setSpeechRate(speed);
-            System.out.println("Success TW");
-        }
-
-        result = en.setLanguage(Locale.US);//<<<===================================
-        if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-            Log.e(TAG, "Language is not available.");
-        }
-        else {
-            en.setSpeechRate(speed);
-            System.out.println("Success EN");
+        if(!mode){
+            result = en.setLanguage(Locale.US);//<<<===================================
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e(TAG, "Language is not available.");
             }
+            else{
+                en.setSpeechRate(speed);
+                //Toast.makeText(this,"EN",Toast.LENGTH_SHORT).show();
+                System.out.println("EN READY");
+            }
+        }
+
+        else {
+            result = tw.setLanguage(Locale.TAIWAN);//<<<===================================
+            mode=!mode;
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e(TAG, "Language is not available.");
+            }
+            else{
+                tw.setSpeechRate(speed);
+                //Toast.makeText(this,"TW",Toast.LENGTH_SHORT).show();
+                System.out.println("TW READY");
+            }
+        }
 
     }
 
