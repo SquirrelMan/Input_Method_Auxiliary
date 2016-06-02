@@ -40,7 +40,7 @@
                 android:id="@+id/btn_start_client"
                 android:layout_width="180dp"
                 android:layout_height="90dp"
-                android:text="一般"
+                android:text="交談"
                 android:visibility="gone"
                 android:background="@drawable/button"
                 android:textSize="45dp"
