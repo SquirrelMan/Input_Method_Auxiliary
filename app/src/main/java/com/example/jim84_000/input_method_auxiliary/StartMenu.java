@@ -68,8 +68,9 @@ public class StartMenu extends Activity{
             @Override
             public void onClick(View v) {
                 SpeechMode.con=false;
+                SpeechMode.path="Main";
                 Intent intent = new Intent();
-                intent.setClass(getApplicationContext(), Speech_Mode_Menu.class);
+                intent.setClass(getApplicationContext(), SpeechMode.class);
                 startActivity(intent);
             }
         });

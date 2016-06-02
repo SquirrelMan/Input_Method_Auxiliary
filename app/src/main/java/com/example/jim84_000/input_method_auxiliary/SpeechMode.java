@@ -168,7 +168,7 @@ public class SpeechMode extends ListActivity implements AdapterView.OnItemClickL
                     }
                     else{
                         char ch=aDataRow.charAt(0);
-                        if((ch>='a' && ch<='z') || (ch>='A' && ch<='Z'))
+                        if(Check.check_eng(ch))
                         {
                             //System.out.println("EN Line");
                             sayHello(aDataRow,0);

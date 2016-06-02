@@ -193,10 +193,10 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
             ((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources()
                     .getString(R.string.client_text));
             mContentView.findViewById(R.id.btn_start_speech).setVisibility(View.VISIBLE);
-            mContentView.findViewById(R.id.btn_start_speechs1).setVisibility(View.VISIBLE);
-            mContentView.findViewById(R.id.btn_start_speechs2).setVisibility(View.VISIBLE);
-            mContentView.findViewById(R.id.btn_start_speechs3).setVisibility(View.VISIBLE);
-            mContentView.findViewById(R.id.btn_start_speechs4).setVisibility(View.VISIBLE);
+            //mContentView.findViewById(R.id.btn_start_speechs1).setVisibility(View.VISIBLE);
+            //mContentView.findViewById(R.id.btn_start_speechs2).setVisibility(View.VISIBLE);
+            //mContentView.findViewById(R.id.btn_start_speechs3).setVisibility(View.VISIBLE);
+            //mContentView.findViewById(R.id.btn_start_speechs4).setVisibility(View.VISIBLE);
         }
 
         // hide the connect button

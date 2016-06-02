@@ -96,7 +96,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         datas[0]=new InputData();
 
         if (!con) {
-            btn_send.setText("SPEAK");
+            btn_send.setText("TALK");
             btn_speech.setVisibility(View.GONE);
         }
         status_speech = !con;
@@ -105,6 +105,7 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         tv_status = (TextView) findViewById(R.id.sender_status);
         tv_status.setText("");
 
+        btn_mwm.setVisibility(View.GONE);
         btAdapter = BluetoothAdapter.getDefaultAdapter();//取用系統藍芽
         if (btAdapter != null) {
             btn_mwm.setVisibility(View.VISIBLE);
@@ -601,9 +602,9 @@ public class InputActivity extends Activity implements TextToSpeech.OnInitListen
         {
             current=0;
             char ch1=hello.charAt(i);
-            if(ch1>='a' && ch1<='z' || ch1>='A' && ch1<='Z')
+            if(Check.check_eng(ch1))
                 current=1;
-            else if(ch1==' '||ch1==','||ch1=='-')
+            else if(Check.check_sign(ch1))
                 current=previous;
 
             if(current!=previous)

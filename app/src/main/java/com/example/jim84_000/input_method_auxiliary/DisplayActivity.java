@@ -88,6 +88,9 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
         //啟動Thread
         fst.start();
     }
+    private boolean isNotSpeaking(){
+        return (!tw.isSpeaking() || !en.isSpeaking());
+    }
     boolean end=false;
     ReentrantLock lock=new ReentrantLock();
     String msg2="";
@@ -97,7 +100,7 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
 
             while (!end){
 
-                if(count>0 &&  (!tw.isSpeaking() || !en.isSpeaking())){
+                if(count>0 && isNotSpeaking()){
                     msg2=buf[current];
                     System.out.println("CURRENT : "+current);
                     System.out.println("COUNT : "+count);
@@ -111,7 +114,8 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
                                 font=75;
                             else if(size>120)
                                 font=50;
-                            if(msg2.length()>0) {
+                            if(msg2.length()>0 && isNotSpeaking()) {
+                                lock.lock();
                                 tv.setTextSize(font);
                                 tv.setText(msg2);
                                 sayHello(" " + msg2);
@@ -119,12 +123,16 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
                                 buf[current]="";
                                 current++;
                                 current%=100;
-                                lock.lock();
                                 count--;
                                 lock.unlock();
                             }
                         }
                     });
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -234,6 +242,8 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
 
     public void sayHello(String hello) {
         //  tw.speak(hello,TextToSpeech.QUEUE_ADD,null);
+        System.out.println("SPEAK :"+hello);
+        System.out.println("TEXT : "+tv.getText());
         String[] msg=new String[50];
         for(int i=0;i<50;i++)
             msg[i]="";
@@ -245,9 +255,9 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
         {
             current=0;
             char ch1=hello.charAt(i);
-            if(ch1>='a' && ch1<='z' || ch1>='A' && ch1<='Z')
+            if(Check.check_eng(ch1))
                 current=1;
-            else if(ch1==' '||ch1==','||ch1=='-')
+            else if(Check.check_sign(ch1))
                 current=previous;
 
             if(current!=previous)
@@ -260,7 +270,6 @@ public class DisplayActivity extends Activity implements TextToSpeech.OnInitList
 
         for(int i=0;i<=count1;i++)
         {
-            System.out.println("SPEAK : "+msg[i]);
             if(speaker==0){
                 tw.speak(msg[i],TextToSpeech.QUEUE_ADD,null);
                 speaker++;
